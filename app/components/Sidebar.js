@@ -78,6 +78,17 @@ const PILLARS = [
       { href: "/analytics/health", label: "Project Health" },
     ],
   },
+  {
+    id: "setup",
+    label: "Setup",
+    color: "#64748b",
+    items: [
+      { href: "/setup/checklist", label: "Checklist" },
+      { href: "/setup/config", label: "Configuration" },
+      { href: "/setup/roadmap-os", label: "Product Roadmap" },
+      { href: "/setup/changelog", label: "Changelog" },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -188,20 +199,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Setup link */}
-      <div className="px-2 pb-2">
-        <Link
-          href="/setup"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] transition-all ${
-            pathname === "/setup"
-              ? "bg-[#1e293b] text-white"
-              : "text-[#475569] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "S" : "Setup & Checklist"}
-        </Link>
-      </div>
 
       {/* User */}
       <div
