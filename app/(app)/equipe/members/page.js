@@ -87,6 +87,21 @@ export default function MembersPage() {
     await supabase.from("cockpit_members").update({ status: "revoked" }).eq("id", id);
   }
 
+  async function resendInvite(email) {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+      },
+    });
+    if (error) {
+      alert(`Failed: ${error.message}`);
+    } else {
+      alert(`Login link sent to ${email}`);
+    }
+  }
+
   async function reactivateMember(id) {
     await supabase.from("cockpit_members").update({ status: "active" }).eq("id", id);
   }
@@ -190,7 +205,7 @@ export default function MembersPage() {
       )}
 
       {/* Active members */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {activeMembers.map((m) => {
           const sprintTasks = tasks.filter((t) => t.builder === m.builder && t.sprint === currentSprint.id);
           const done = sprintTasks.filter((t) => t.status === "done").length;
@@ -262,23 +277,34 @@ export default function MembersPage() {
               </div>
 
               {/* Admin actions */}
-              {isAdmin && m.email !== user?.email && (
-                <div className="flex gap-2 mt-3 pt-3 border-t border-[#1e293b]">
-                  <select
-                    value={m.role}
-                    onChange={(e) => updateRole(m.id, e.target.value)}
-                    className="py-1 px-2 rounded border border-[#1e293b] bg-[#0a0f1a] text-[#94a3b8] text-[10px] font-mono outline-none"
-                  >
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
+              {isAdmin && (
+                <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[#1e293b]">
+                  {/* Send login link to anyone */}
                   <button
-                    onClick={() => revokeMember(m.id)}
-                    className="text-[10px] text-red-400 hover:text-red-300 font-mono"
+                    onClick={() => resendInvite(m.email)}
+                    className="text-[11px] px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 font-mono transition-colors"
                   >
-                    Revoke
+                    Send login link
                   </button>
+                  {m.email !== user?.email && (
+                    <>
+                      <select
+                        value={m.role}
+                        onChange={(e) => updateRole(m.id, e.target.value)}
+                        className="py-1 px-2 rounded border border-[#1e293b] bg-[#0a0f1a] text-[#94a3b8] text-[10px] font-mono outline-none"
+                      >
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                      <button
+                        onClick={() => revokeMember(m.id)}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-mono"
+                      >
+                        Revoke
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </Card>
