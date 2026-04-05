@@ -85,7 +85,8 @@ const PILLARS = [
     color: "#64748b",
     items: [
       { href: "/setup/checklist", label: "Checklist" },
-      { href: "/setup/config", label: "Settings" },
+      { href: "/setup/config", label: "Project Settings" },
+      { href: "/setup/api-keys", label: "API Keys" },
       { href: "/setup/roadmap-os", label: "Product Roadmap" },
       { href: "/setup/changelog", label: "Changelog" },
     ],
