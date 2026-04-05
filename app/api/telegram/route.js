@@ -119,7 +119,7 @@ Keep responses short (under 300 chars for Telegram). Use emojis. Be helpful and 
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "anthropic/claude-haiku-4-5-20251001",
+          model: "anthropic/claude-3-haiku",
           max_tokens: 300,
           messages: [
             { role: "system", content: context },
