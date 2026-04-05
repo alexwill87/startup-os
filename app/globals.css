@@ -2,7 +2,6 @@
 
 :root {
   --sidebar-width: 260px;
-  --sidebar-collapsed: 60px;
   --bg-primary: #080c14;
   --bg-card: #0d1117;
   --bg-hover: #161b22;
@@ -13,9 +12,10 @@
   --accent: #3b82f6;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { height: 100%; color-scheme: dark; }
+html {
+  height: 100%;
+  color-scheme: dark;
+}
 
 body {
   background: var(--bg-primary);
@@ -27,20 +27,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-a { color: inherit; text-decoration: none; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-/* Focus ring utility */
+/* Focus ring */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* Smooth transitions for interactive elements */
-button, a, input, select, textarea {
-  transition: all 0.15s ease;
-}
-
-/* Card hover lift utility */
+/* Card hover lift */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
