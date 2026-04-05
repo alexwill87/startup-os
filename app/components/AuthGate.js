@@ -21,10 +21,15 @@ export default function AuthGate({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen">
       <Sidebar />
-      <main className="flex-1 ml-[260px] p-8 overflow-y-auto">
-        {children}
+      <main
+        className="min-h-screen p-8 lg:p-10 overflow-y-auto"
+        style={{ marginLeft: "260px" }}
+      >
+        <div className="max-w-[1200px]">
+          {children}
+        </div>
       </main>
     </div>
   );

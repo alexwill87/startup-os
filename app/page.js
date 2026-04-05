@@ -95,7 +95,7 @@ export default function Home() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card className="text-center py-6">
           <div className="text-3xl font-extrabold" style={{ color: healthPct >= 70 ? "#6ee7b7" : healthPct >= 40 ? "#fcd34d" : "#94a3b8" }}>
             {healthPct}%
