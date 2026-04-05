@@ -1,12 +1,11 @@
 "use client";
 
 import { useAuth } from "@/lib/AuthProvider";
-import { ALLOWED_EMAILS } from "@/lib/supabase";
 import LoginScreen from "./LoginScreen";
 import Sidebar from "./Sidebar";
 
 export default function AuthGate({ children }) {
-  const { user, loading } = useAuth();
+  const { user, member, loading } = useAuth();
 
   if (loading) {
     return (
@@ -16,7 +15,8 @@ export default function AuthGate({ children }) {
     );
   }
 
-  if (!user || !ALLOWED_EMAILS.includes(user.email)) {
+  // Not logged in, or not a member
+  if (!user || !member) {
     return <LoginScreen />;
   }
 
