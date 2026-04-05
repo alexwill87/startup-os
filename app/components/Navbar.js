@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/board", label: "Board" },
   { href: "/decisions", label: "Decisions" },
   { href: "/retro", label: "Retro" },
+  { href: "/docs", label: "Docs" },
 ];
 
 export default function Navbar() {
