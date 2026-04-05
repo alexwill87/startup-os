@@ -90,7 +90,7 @@ export default function MissionPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       <PageHeader
         title="Mission & Vision"
         subtitle="Define why Radar exists and where it's going"
@@ -109,7 +109,7 @@ export default function MissionPage() {
       </Card>
 
       {/* Section cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {SECTIONS.map((section) => {
           const entry = entries[section.key];
           const isEditing = editing === section.key;
@@ -148,16 +148,16 @@ export default function MissionPage() {
                     onChange={(e) => setEditValue(e.target.value)}
                     autoFocus
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <button
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg text-white"
+                      className="px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 transition"
                       style={{ backgroundColor: COLOR }}
                       onClick={() => saveEntry(section.key)}
                     >
                       Save
                     </button>
                     <button
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg text-[#64748b] bg-[#1e293b] hover:bg-[#334155] transition"
+                      className="px-4 py-2 text-sm font-semibold rounded-lg text-[#64748b] bg-[#1e293b] hover:bg-[#334155] transition"
                       onClick={cancelEdit}
                     >
                       Cancel
@@ -182,10 +182,10 @@ export default function MissionPage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-6">
-                  <p className="text-xs text-[#475569] mb-3">{section.placeholder}</p>
+                <div className="text-center py-8">
+                  <p className="text-sm text-[#475569] mb-4">{section.placeholder}</p>
                   <button
-                    className="text-xs font-semibold px-4 py-2 rounded-lg border border-dashed border-[#334155] text-[#64748b] hover:border-blue-500/50 hover:text-blue-400 transition"
+                    className="text-sm font-semibold px-5 py-2.5 rounded-lg border border-dashed border-[#334155] text-[#64748b] hover:border-blue-500/50 hover:text-blue-400 transition"
                     onClick={() => startEdit(section.key)}
                   >
                     + Define {section.label}
@@ -199,7 +199,7 @@ export default function MissionPage() {
 
       {/* All product vision entries */}
       <div>
-        <h2 className="text-sm font-bold text-[#64748b] uppercase tracking-wider mb-3">
+        <h2 className="text-xs font-bold text-[#64748b] uppercase tracking-widest mb-4">
           All Product Vision Entries
         </h2>
         <AllEntries />

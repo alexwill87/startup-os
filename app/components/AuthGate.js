@@ -23,7 +23,7 @@ export default function AuthGate({ children }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 ml-[260px] p-6 overflow-y-auto">
+      <main className="flex-1 ml-[260px] p-8 overflow-y-auto">
         {children}
       </main>
     </div>

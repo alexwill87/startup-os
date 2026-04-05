@@ -144,14 +144,14 @@ export default function Sidebar() {
             <div key={pillar.id} className="mb-1">
               <button
                 onClick={() => togglePillar(pillar.id)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all duration-150 ${
                   pillarActive
-                    ? "text-white font-semibold"
+                    ? "text-white font-semibold bg-[#161b22]"
                     : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
                 }`}
               >
                 <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{ background: pillar.color }}
                 />
                 {!collapsed && (
@@ -165,25 +165,19 @@ export default function Sidebar() {
               </button>
 
               {isOpen && !collapsed && (
-                <div className="ml-4 mt-0.5 space-y-0.5">
+                <div className="ml-4 mt-1 space-y-0.5 border-l border-[#1e293b]">
                   {pillar.items.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`block px-3 py-1.5 rounded-md text-[12px] transition-all ${
+                      className={`block px-3 py-2 rounded-r-md text-[12.5px] transition-all duration-150 -ml-px ${
                         isActive(item.href)
-                          ? "text-white font-medium"
-                          : "text-[#475569] hover:text-[#94a3b8] hover:bg-[#161b22]"
+                          ? "text-white font-medium border-l-2"
+                          : "text-[#475569] hover:text-[#94a3b8] hover:bg-[#161b22] border-l-2 border-transparent"
                       }`}
-                      style={isActive(item.href) ? { color: pillar.color } : {}}
+                      style={isActive(item.href) ? { color: pillar.color, borderLeftColor: pillar.color } : {}}
                     >
                       <span className="flex items-center gap-2">
-                        {isActive(item.href) && (
-                          <span
-                            className="w-1 h-1 rounded-full"
-                            style={{ background: pillar.color }}
-                          />
-                        )}
                         {item.label}
                       </span>
                     </Link>

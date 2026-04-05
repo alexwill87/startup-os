@@ -54,7 +54,7 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-8">
       <PageHeader title="Project Overview" color={COLOR} />
 
       {/* Current Sprint Banner */}
@@ -82,9 +82,9 @@ export default function OverviewPage() {
           { label: "Bloquées", value: blocked },
           { label: "Jours restants", value: daysUntilNext },
         ].map((s) => (
-          <Card key={s.label}>
-            <p className="text-xs text-zinc-400 uppercase tracking-wide">{s.label}</p>
-            <p className="text-2xl font-bold mt-1" style={{ color: COLOR }}>
+          <Card key={s.label} className="text-center py-6">
+            <p className="text-xs text-[#64748b] uppercase tracking-widest mb-2">{s.label}</p>
+            <p className="text-3xl font-extrabold" style={{ color: COLOR }}>
               {s.value}
             </p>
           </Card>
@@ -93,8 +93,8 @@ export default function OverviewPage() {
 
       {/* Builder Progress */}
       <div>
-        <h3 className="text-md font-semibold text-white mb-3">Progression par builder</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h3 className="text-sm font-bold text-[#94a3b8] uppercase tracking-widest mb-4">Progression par builder</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {BUILDERS.map((b) => {
             const st = builderStats(b.id);
             return (

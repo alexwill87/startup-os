@@ -81,7 +81,7 @@ export default function KPIsPage() {
   const latest = history.length > 0 ? history[0] : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="KPIs"
         subtitle="Key Performance Indicators tracking"
@@ -90,7 +90,7 @@ export default function KPIsPage() {
 
       {/* Stat cards with progress bars */}
       {latest && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(TARGETS).map(([key, target]) => {
             const value = latest[key] || 0;
             const pctMin = target.min > 0 ? Math.min((value / target.min) * 100, 100) : 0;
@@ -98,10 +98,10 @@ export default function KPIsPage() {
             const hitMin = pctMin >= 100;
             return (
               <Card key={key}>
-                <div className="space-y-2">
-                  <p className="text-zinc-400 text-xs">{target.label}</p>
-                  <p className="text-white text-2xl font-bold">{value}</p>
-                  <div className="w-full bg-zinc-800 rounded-full h-2">
+                <div className="space-y-3">
+                  <p className="text-[#64748b] text-xs uppercase tracking-wide">{target.label}</p>
+                  <p className="text-white text-3xl font-extrabold">{value}</p>
+                  <div className="w-full bg-[#1e293b] rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all"
                       style={{
@@ -110,7 +110,7 @@ export default function KPIsPage() {
                       }}
                     />
                   </div>
-                  <div className="flex justify-between text-xs text-zinc-500">
+                  <div className="flex justify-between text-xs text-[#475569]">
                     <span>Min: {target.min}</span>
                     <span>Stretch: {target.stretch}</span>
                   </div>
@@ -125,7 +125,7 @@ export default function KPIsPage() {
       <div className="flex justify-end">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+          className="px-5 py-2.5 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition"
           style={{ backgroundColor: COLOR }}
         >
           {showForm ? "Cancel" : "+ Log KPIs"}
@@ -134,8 +134,8 @@ export default function KPIsPage() {
 
       {showForm && (
         <Card>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Log KPI Entry</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h3 className="text-lg font-bold text-white">Log KPI Entry</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm text-zinc-400 mb-1">Date</label>
@@ -205,7 +205,7 @@ export default function KPIsPage() {
 
       {/* History table */}
       <div>
-        <h3 className="text-sm font-medium text-zinc-400 mb-3">History</h3>
+        <h3 className="text-xs font-bold text-[#94a3b8] uppercase tracking-widest mb-4">History</h3>
         {loading ? (
           <p className="text-zinc-500 text-sm">Loading...</p>
         ) : history.length === 0 ? (

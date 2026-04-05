@@ -64,15 +64,15 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-8">
       <PageHeader title="Kanban Board" color={COLOR} />
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <select
           value={sprintFilter}
           onChange={(e) => setSprintFilter(Number(e.target.value))}
-          className="bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm text-white"
+          className="bg-[#0d1117] border border-[#1e293b] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#f59e0b]/50"
         >
           {SPRINTS.map((s) => (
             <option key={s.id} value={s.id}>{s.name}</option>
@@ -80,7 +80,7 @@ export default function BoardPage() {
         </select>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded text-sm font-medium text-black"
+          className="px-5 py-2.5 rounded-lg text-sm font-semibold text-black hover:opacity-90 transition"
           style={{ backgroundColor: COLOR }}
         >
           {showForm ? "Annuler" : "+ Nouvelle tâche"}
@@ -90,7 +90,7 @@ export default function BoardPage() {
       {/* Add Task Form */}
       {showForm && (
         <Card>
-          <form onSubmit={addTask} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <form onSubmit={addTask} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               placeholder="Titre *"
               value={form.title}
@@ -150,18 +150,18 @@ export default function BoardPage() {
       {loading ? (
         <p className="text-zinc-400">Chargement...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {COLUMNS.map((col) => {
             const colTasks = tasks.filter((t) => t.status === col.key);
             return (
-              <div key={col.key} className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wide">{col.label}</h3>
-                  <span className="text-xs text-zinc-400 bg-zinc-800 rounded-full px-2 py-0.5">{colTasks.length}</span>
+              <div key={col.key} className="space-y-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-widest">{col.label}</h3>
+                  <span className="text-xs text-[#64748b] bg-[#1e293b] rounded-full px-2.5 py-0.5 font-mono">{colTasks.length}</span>
                 </div>
-                <div className="space-y-2 min-h-[100px]">
+                <div className="space-y-3 min-h-[120px]">
                   {colTasks.map((task) => (
-                    <div key={task.id} className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 space-y-2">
+                    <div key={task.id} className="bg-[#0d1117] border border-[#1e293b] rounded-lg p-4 space-y-3 hover:border-[#334155] transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-medium text-white leading-tight">{task.title}</p>
                         <button onClick={() => deleteTask(task.id)} className="text-zinc-500 hover:text-red-400 text-xs shrink-0">✕</button>

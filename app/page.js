@@ -86,63 +86,63 @@ export default function Home() {
   return (
     <div>
       {/* Vision header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-white mb-2">Radar</h1>
-        <p className="text-[14px] text-[#94a3b8] leading-relaxed max-w-2xl">
+      <div className="mb-10">
+        <h1 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Radar</h1>
+        <p className="text-base text-[#94a3b8] leading-relaxed max-w-2xl">
           Radar monitors every job platform you care about and the moment a matching opportunity appears,
           it sends you an instant alert with a tailored CV and pitch — before most applicants even open their laptop.
         </p>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <Card className="text-center">
-          <div className="text-2xl font-extrabold" style={{ color: healthPct >= 70 ? "#6ee7b7" : healthPct >= 40 ? "#fcd34d" : "#94a3b8" }}>
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        <Card className="text-center py-6">
+          <div className="text-3xl font-extrabold" style={{ color: healthPct >= 70 ? "#6ee7b7" : healthPct >= 40 ? "#fcd34d" : "#94a3b8" }}>
             {healthPct}%
           </div>
-          <div className="text-[11px] text-[#64748b] mt-1">Project Health</div>
+          <div className="text-xs text-[#64748b] mt-2">Project Health</div>
         </Card>
-        <Card className="text-center">
-          <div className="text-2xl font-extrabold text-[#6ee7b7]">{counts.done}/{counts.tasks}</div>
-          <div className="text-[11px] text-[#64748b] mt-1">Tasks Done</div>
+        <Card className="text-center py-6">
+          <div className="text-3xl font-extrabold text-[#6ee7b7]">{counts.done}/{counts.tasks}</div>
+          <div className="text-xs text-[#64748b] mt-2">Tasks Done</div>
         </Card>
-        <Card className="text-center">
-          <div className="text-2xl font-extrabold text-white">{currentSprint.name.split(" — ")[0]}</div>
-          <div className="text-[11px] text-[#64748b] mt-1">{currentSprint.name.split(" — ")[1]}</div>
+        <Card className="text-center py-6">
+          <div className="text-3xl font-extrabold text-white">{currentSprint.name.split(" — ")[0]}</div>
+          <div className="text-xs text-[#64748b] mt-2">{currentSprint.name.split(" — ")[1]}</div>
         </Card>
-        <Card className="text-center">
-          <div className="text-2xl font-extrabold text-[#fcd34d]">{daysUntil > 0 ? `${daysUntil}d` : "Today!"}</div>
-          <div className="text-[11px] text-[#64748b] mt-1">Next Sprint</div>
+        <Card className="text-center py-6">
+          <div className="text-3xl font-extrabold text-[#fcd34d]">{daysUntil > 0 ? `${daysUntil}d` : "Today!"}</div>
+          <div className="text-xs text-[#64748b] mt-2">Next Sprint</div>
         </Card>
       </div>
 
       {/* 7 Pillars */}
-      <h2 className="text-sm font-bold text-[#94a3b8] mb-3 uppercase tracking-wider">7 Pillars</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <h2 className="text-xs font-bold text-[#94a3b8] mb-4 uppercase tracking-widest">7 Pillars</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {PILLARS.map((p) => (
           <a key={p.id} href={p.href}>
-            <Card className="hover:border-[#334155] transition-colors cursor-pointer group">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: p.color }} />
-                <span className="text-[14px] font-bold text-white group-hover:text-[#93c5fd] transition-colors">{p.label}</span>
+            <Card className="card-hover cursor-pointer group py-6">
+              <div className="flex items-center gap-2.5 mb-3">
+                <span className="w-3 h-3 rounded-full" style={{ background: p.color }} />
+                <span className="text-sm font-bold text-white group-hover:text-[#93c5fd] transition-colors">{p.label}</span>
               </div>
-              <p className="text-[11px] text-[#475569]">{p.desc}</p>
+              <p className="text-xs text-[#475569] leading-relaxed">{p.desc}</p>
             </Card>
           </a>
         ))}
         <a href="/setup">
-          <Card className="hover:border-[#334155] transition-colors cursor-pointer group border-dashed">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#475569]" />
-              <span className="text-[14px] font-bold text-[#64748b] group-hover:text-white transition-colors">Setup</span>
+          <Card className="card-hover cursor-pointer group border-dashed py-6">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-3 h-3 rounded-full bg-[#475569]" />
+              <span className="text-sm font-bold text-[#64748b] group-hover:text-white transition-colors">Setup</span>
             </div>
-            <p className="text-[11px] text-[#475569]">Checklist & Config</p>
+            <p className="text-xs text-[#475569] leading-relaxed">Checklist & Config</p>
           </Card>
         </a>
       </div>
 
       {/* Recent activity */}
-      <h2 className="text-sm font-bold text-[#94a3b8] mb-3 uppercase tracking-wider">Recent Activity</h2>
+      <h2 className="text-xs font-bold text-[#94a3b8] mb-4 uppercase tracking-widest">Recent Activity</h2>
       <Card>
         {tasks.length === 0 ? (
           <p className="text-[#475569] text-sm">No recent activity.</p>
