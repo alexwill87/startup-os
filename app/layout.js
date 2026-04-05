@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Radar Cockpit",
-  description: "Internal dashboard for Radar team — Sprint management",
+  title: "Project OS — Radar",
+  description: "Team dashboard for builders — 7 pillars, real-time collaboration",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
