@@ -87,6 +87,7 @@ const PILLARS = [
       { href: "/setup/checklist", label: "Checklist" },
       { href: "/setup/config", label: "Project Settings" },
       { href: "/setup/api-keys", label: "API Keys" },
+      { href: "/setup/bot", label: "Bot" },
       { href: "/setup/roadmap-os", label: "Product Roadmap" },
       { href: "/setup/changelog", label: "Changelog" },
     ],
