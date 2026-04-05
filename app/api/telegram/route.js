@@ -38,22 +38,39 @@ export async function POST(request) {
       return Response.json({ ok: true });
     }
 
-    // Get Claude API key from vault
-    const { data: apiKeyRow } = await supabase
+    // Get API key from vault — try OpenRouter first, then Anthropic
+    let apiKey = null;
+    let useOpenRouter = false;
+
+    const { data: openrouterKey } = await supabase
       .from("cockpit_api_keys")
       .select("key_encrypted")
-      .eq("provider", "anthropic")
+      .eq("provider", "openrouter")
       .eq("is_active", true)
-      .eq("scope", "project")
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (!apiKeyRow?.key_encrypted) {
-      await sendTelegramWithToken(tokenRow.value, chatId, "⚠️ No Anthropic API key configured. Go to Config > API Keys to add one.");
-      return Response.json({ ok: true });
+    if (openrouterKey?.key_encrypted) {
+      apiKey = atob(openrouterKey.key_encrypted);
+      useOpenRouter = true;
+    } else {
+      const { data: anthropicKey } = await supabase
+        .from("cockpit_api_keys")
+        .select("key_encrypted")
+        .eq("provider", "anthropic")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (anthropicKey?.key_encrypted) {
+        apiKey = atob(anthropicKey.key_encrypted);
+      }
     }
 
-    const claudeKey = atob(apiKeyRow.key_encrypted);
+    if (!apiKey) {
+      await sendTelegramWithToken(tokenRow.value, chatId, "⚠️ No API key configured. Go to Config > API Keys and add an OpenRouter or Anthropic key.");
+      return Response.json({ ok: true });
+    }
 
     // Gather project context from Supabase
     const [
@@ -91,24 +108,45 @@ ${(recentActivity || []).map((a) => `- ${a.actor_name} ${a.action} ${a.entity_ty
 
 Keep responses short (under 300 chars for Telegram). Use emojis. Be helpful and direct.`;
 
-    // Call Claude Haiku
-    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": claudeKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 300,
-        messages: [{ role: "user", content: text }],
-        system: context,
-      }),
-    });
+    // Call LLM (OpenRouter or Anthropic direct)
+    let reply;
 
-    const claudeData = await claudeRes.json();
-    const reply = claudeData.content?.[0]?.text || "Sorry, I couldn't process that. Try again.";
+    if (useOpenRouter) {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "anthropic/claude-haiku-4-5-20251001",
+          max_tokens: 300,
+          messages: [
+            { role: "system", content: context },
+            { role: "user", content: text },
+          ],
+        }),
+      });
+      const data = await res.json();
+      reply = data.choices?.[0]?.message?.content || data.error?.message || "Sorry, I couldn't process that.";
+    } else {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 300,
+          messages: [{ role: "user", content: text }],
+          system: context,
+        }),
+      });
+      const data = await res.json();
+      reply = data.content?.[0]?.text || data.error?.message || "Sorry, I couldn't process that.";
+    }
 
     await sendTelegramWithToken(tokenRow.value, chatId, reply);
 
