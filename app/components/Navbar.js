@@ -8,9 +8,12 @@ import { supabase } from "@/lib/supabase";
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard" },
   { href: "/board", label: "Board" },
+  { href: "/vision", label: "Vision" },
   { href: "/decisions", label: "Decisions" },
-  { href: "/retro", label: "Retro" },
+  { href: "/kpis", label: "KPIs" },
+  { href: "/resources", label: "Resources" },
   { href: "/docs", label: "Docs" },
+  { href: "/retro", label: "Retro" },
 ];
 
 export default function Navbar() {
@@ -26,7 +29,7 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className={`nav-link ${pathname === href ? "active" : ""}`}
+              className={`nav-link ${pathname === href || (href !== "/" && pathname.startsWith(href)) ? "active" : ""}`}
             >
               {label}
             </Link>
