@@ -11,9 +11,10 @@ const BUILDER_LIST = Object.values(BUILDERS);
 export default function Board() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
-  const [activeSprint, setActiveSprint] = useState(
-    SPRINTS.find((s) => new Date(s.date) >= new Date())?.id || 1
-  );
+  const [activeSprint, setActiveSprint] = useState(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return [...SPRINTS].reverse().find((s) => s.date <= today)?.id || 1;
+  });
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", builder: "A", priority: "medium", task_ref: "" });
 

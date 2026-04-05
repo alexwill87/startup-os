@@ -13,9 +13,10 @@ const CATEGORIES = [
 export default function Retro() {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
-  const [activeSprint, setActiveSprint] = useState(
-    SPRINTS.find((s) => new Date(s.date) >= new Date())?.id || 1
-  );
+  const [activeSprint, setActiveSprint] = useState(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return [...SPRINTS].reverse().find((s) => s.date <= today)?.id || 1;
+  });
   const [newItem, setNewItem] = useState({ keep: "", stop: "", try: "" });
 
   useEffect(() => {

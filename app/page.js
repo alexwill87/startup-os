@@ -37,7 +37,9 @@ export default function Dashboard() {
     setDecisions(d || []);
   }
 
-  const currentSprint = SPRINTS.find((s) => new Date(s.date) >= new Date()) || SPRINTS[3];
+  // Compare dates only (ignore time) to find current sprint
+  const todayStr = new Date().toISOString().split("T")[0];
+  const currentSprint = [...SPRINTS].reverse().find((s) => s.date <= todayStr) || SPRINTS[0];
   const sprintTasks = tasks.filter((t) => t.sprint === currentSprint.id);
   const totalTasks = sprintTasks.length;
   const doneTasks = sprintTasks.filter((t) => t.status === "done").length;
@@ -45,7 +47,7 @@ export default function Dashboard() {
   const progressPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   const now = new Date();
-  const nextSprint = SPRINTS.find((s) => new Date(s.date) > now);
+  const nextSprint = SPRINTS.find((s) => s.date > todayStr);
   const daysUntil = nextSprint
     ? Math.ceil((new Date(nextSprint.date) - now) / (1000 * 60 * 60 * 24))
     : 0;
