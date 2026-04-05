@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 const PILLARS = [
   {
     id: "pourquoi",
-    label: "Pourquoi",
+    label: "Why",
     color: "#3b82f6",
     items: [
       { href: "/pourquoi/mission", label: "Mission & Vision" },
@@ -19,16 +19,17 @@ const PILLARS = [
   },
   {
     id: "equipe",
-    label: "Équipe",
+    label: "Team",
     color: "#8b5cf6",
     items: [
       { href: "/equipe/members", label: "Members" },
       { href: "/equipe/roles", label: "Roles & Skills" },
+      { href: "/equipe/profile", label: "My Profile" },
     ],
   },
   {
     id: "ressources",
-    label: "Ressources",
+    label: "Resources",
     color: "#10b981",
     items: [
       { href: "/ressources/links", label: "Links & Docs" },
@@ -38,7 +39,7 @@ const PILLARS = [
   },
   {
     id: "projet",
-    label: "Projet",
+    label: "Project",
     color: "#f59e0b",
     items: [
       { href: "/projet/overview", label: "Overview" },
@@ -50,7 +51,7 @@ const PILLARS = [
   },
   {
     id: "clients",
-    label: "Clients & Marché",
+    label: "Market",
     color: "#ec4899",
     items: [
       { href: "/clients/personas", label: "Personas" },
@@ -80,11 +81,11 @@ const PILLARS = [
   },
   {
     id: "setup",
-    label: "Setup",
+    label: "Config",
     color: "#64748b",
     items: [
       { href: "/setup/checklist", label: "Checklist" },
-      { href: "/setup/config", label: "Configuration" },
+      { href: "/setup/config", label: "Settings" },
       { href: "/setup/roadmap-os", label: "Product Roadmap" },
       { href: "/setup/changelog", label: "Changelog" },
     ],
