@@ -132,8 +132,8 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Home */}
-      <div className="px-2 pt-3 pb-1">
+      {/* Home + Activity */}
+      <div className="px-2 pt-3 pb-1 space-y-0.5">
         <Link
           href="/"
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
@@ -143,6 +143,16 @@ export default function Sidebar() {
           }`}
         >
           {collapsed ? "H" : "Home"}
+        </Link>
+        <Link
+          href="/activity"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/activity"
+              ? "bg-[#1e293b] text-white font-semibold"
+              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "A" : "Activity"}
         </Link>
       </div>
 
