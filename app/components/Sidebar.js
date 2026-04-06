@@ -178,6 +178,16 @@ export default function Sidebar() {
         >
           {collapsed ? "!" : "Feedback"}
         </Link>
+        <Link
+          href="/leaderboard"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/leaderboard"
+              ? "bg-[#1e293b] text-white font-semibold"
+              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "★" : "Leaderboard"}
+        </Link>
       </div>
 
       {/* Pillars */}

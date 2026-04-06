@@ -61,9 +61,33 @@ export default function FeedbackPage() {
   }
 
   async function vote(id) {
-    const item = items.find((i) => i.id === id);
-    if (!item) return;
-    await supabase.from("cockpit_feedback").update({ votes: (item.votes || 0) + 1 }).eq("id", id);
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
+
+    // Check if already voted
+    const { data: existing } = await supabase
+      .from("cockpit_votes")
+      .select("id")
+      .eq("entity_type", "feedback")
+      .eq("entity_id", id)
+      .eq("voter_id", authUser.id)
+      .maybeSingle();
+
+    if (existing) {
+      // Remove vote (toggle)
+      await supabase.from("cockpit_votes").delete().eq("id", existing.id);
+      await supabase.from("cockpit_feedback").update({ votes: Math.max(0, (items.find((i) => i.id === id)?.votes || 1) - 1) }).eq("id", id);
+    } else {
+      // Add vote
+      await supabase.from("cockpit_votes").insert({
+        entity_type: "feedback",
+        entity_id: id,
+        direction: "up",
+        voter_id: authUser.id,
+        voter_name: member?.name || "Unknown",
+      });
+      await supabase.from("cockpit_feedback").update({ votes: (items.find((i) => i.id === id)?.votes || 0) + 1 }).eq("id", id);
+    }
   }
 
   async function updateStatus(id, status) {
