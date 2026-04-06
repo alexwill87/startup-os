@@ -25,10 +25,13 @@ const CAT_STYLES = {
 export default function PillarDashboard({ pillar, label, color, subpages }) {
   const { user, member, isAdmin } = useAuth();
   const [items, setItems] = useState([]);
+  const [responses, setResponses] = useState({});
   const [owner, setOwner] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [expandedItem, setExpandedItem] = useState(null);
+  const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
     fetchAll();
@@ -40,15 +43,51 @@ export default function PillarDashboard({ pillar, label, color, subpages }) {
   }, [pillar]);
 
   async function fetchAll() {
-    const [{ data: checklistData }, { data: ownerData }, { data: memberData }] = await Promise.all([
+    const [{ data: checklistData }, { data: ownerData }, { data: memberData }, { data: responseData }] = await Promise.all([
       supabase.from("cockpit_checklist").select("*").eq("pillar", pillar).order("sort_order", { ascending: true }),
       supabase.from("cockpit_config").select("value").eq("key", `pillar_owner_${pillar}`).maybeSingle(),
-      supabase.from("cockpit_members").select("name, email, builder, color").eq("status", "active"),
+      supabase.from("cockpit_members").select("name, email, builder, color, role").eq("status", "active"),
+      supabase.from("cockpit_responses").select("*").order("created_at", { ascending: true }),
     ]);
     setItems(checklistData || []);
     setOwner(ownerData?.value || null);
     setMembers(memberData || []);
+    // Group responses by checklist_id
+    const grouped = {};
+    (responseData || []).forEach((r) => {
+      if (!grouped[r.checklist_id]) grouped[r.checklist_id] = [];
+      grouped[r.checklist_id].push(r);
+    });
+    setResponses(grouped);
     setLoading(false);
+  }
+
+  async function addResponse(checklistId) {
+    if (!replyText.trim()) return;
+    await supabase.from("cockpit_responses").insert({
+      checklist_id: checklistId,
+      body: replyText,
+      author_id: user?.id,
+      author_name: member?.name || "Unknown",
+      author_role: member?.role || "member",
+    });
+    logActivity("commented", "checklist", { title: replyText.slice(0, 50) });
+    setReplyText("");
+    fetchAll();
+  }
+
+  async function voteResponse(id, direction) {
+    const field = direction === "up" ? "votes_up" : "votes_down";
+    const { data } = await supabase.from("cockpit_responses").select(field).eq("id", id).single();
+    if (data) {
+      await supabase.from("cockpit_responses").update({ [field]: (data[field] || 0) + 1 }).eq("id", id);
+      fetchAll();
+    }
+  }
+
+  async function acceptResponse(id) {
+    await supabase.from("cockpit_responses").update({ is_accepted: true }).eq("id", id);
+    fetchAll();
   }
 
   async function updateStatus(id, newStatus, title) {
@@ -211,6 +250,66 @@ export default function PillarDashboard({ pillar, label, color, subpages }) {
                   {item.validated_by_name && (
                     <div className="text-[10px] text-purple-400 font-mono mt-1">
                       Validated by {item.validated_by_name}
+                    </div>
+                  )}
+
+                  {/* Response count + toggle */}
+                  <button
+                    onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+                    className="text-[10px] text-[#475569] hover:text-[#94a3b8] font-mono mt-2 transition-colors"
+                  >
+                    {(responses[item.id] || []).length > 0
+                      ? `${(responses[item.id] || []).length} response${(responses[item.id] || []).length > 1 ? "s" : ""} ${expandedItem === item.id ? "▾" : "▸"}`
+                      : `Add response ${expandedItem === item.id ? "▾" : "▸"}`}
+                  </button>
+
+                  {/* Response thread */}
+                  {expandedItem === item.id && (
+                    <div className="mt-3 space-y-2 border-t border-[#1e293b] pt-3">
+                      {(responses[item.id] || []).map((r) => (
+                        <div key={r.id} className={`p-2.5 rounded-lg ${r.is_accepted ? "bg-emerald-500/5 border border-emerald-500/20" : "bg-[#0a0f1a] border border-[#1e293b]"}`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[11px] font-bold text-white">{r.author_name}</span>
+                            <span className="text-[9px] font-mono text-[#475569]">{r.author_role}</span>
+                            {r.is_accepted && <span className="text-[9px] font-mono text-emerald-400">ACCEPTED</span>}
+                            <span className="text-[9px] text-[#334155] font-mono ml-auto">
+                              {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#94a3b8] whitespace-pre-wrap">{r.body}</p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <button onClick={() => voteResponse(r.id, "up")} className="text-[10px] text-[#475569] hover:text-emerald-400 font-mono">
+                              ▲ {r.votes_up || 0}
+                            </button>
+                            <button onClick={() => voteResponse(r.id, "down")} className="text-[10px] text-[#475569] hover:text-red-400 font-mono">
+                              ▼ {r.votes_down || 0}
+                            </button>
+                            {!r.is_accepted && (
+                              <button onClick={() => acceptResponse(r.id)} className="text-[10px] text-[#475569] hover:text-emerald-400 font-mono ml-auto">
+                                Accept
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add response */}
+                      <div className="flex gap-2">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Your answer or comment..."
+                          rows={2}
+                          className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-[#94a3b8] text-xs font-mono outline-none focus:border-[#3b82f6] resize-none"
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addResponse(item.id); } }}
+                        />
+                        <button
+                          onClick={() => addResponse(item.id)}
+                          className="px-3 self-end py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-mono hover:bg-blue-500/20 transition-colors"
+                        >
+                          Send
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

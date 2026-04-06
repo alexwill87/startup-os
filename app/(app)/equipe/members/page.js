@@ -158,9 +158,12 @@ export default function MembersPage() {
                 onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
                 className="py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm font-mono outline-none"
               >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-                <option value="viewer">Viewer</option>
+                <option value="cofounder">Co-founder</option>
+                <option value="mentor">Mentor</option>
+                <option value="contributor">Contributor</option>
+                <option value="ambassador">Ambassador</option>
+                <option value="prospect">Prospect</option>
+                <option value="fan">Fan</option>
               </select>
               <input
                 type="text"
