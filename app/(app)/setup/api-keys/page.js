@@ -23,7 +23,7 @@ export default function ApiKeysPage() {
   const { user, member, isAdmin } = useAuth();
   const [keys, setKeys] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ provider: "anthropic", label: "", key: "", scope: "project" });
+  const [form, setForm] = useState({ provider: "anthropic", label: "", key: "", scope: "project", expires_days: "" });
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function ApiKeysPage() {
     // Store the key encrypted (base64 for now — in prod use proper encryption)
     const encrypted = btoa(form.key);
 
-    const { error } = await supabase.from("cockpit_api_keys").insert({
+    const insertData = {
       provider: form.provider,
       label: form.label || PROVIDERS.find((p) => p.id === form.provider)?.label || form.provider,
       key_hash: hashed,
@@ -91,13 +91,21 @@ export default function ApiKeysPage() {
       added_by_email: user?.email,
       added_by_name: member?.name || user?.email?.split("@")[0],
       scope: form.scope,
-    });
+    };
+
+    if (form.expires_days && parseInt(form.expires_days) > 0) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(form.expires_days));
+      insertData.expires_at = expiresAt.toISOString();
+    }
+
+    const { error } = await supabase.from("cockpit_api_keys").insert(insertData);
 
     if (error) {
       setStatus({ type: "error", msg: error.message });
     } else {
       setStatus({ type: "success", msg: "Key added securely." });
-      setForm({ provider: "anthropic", label: "", key: "", scope: "project" });
+      setForm({ provider: "anthropic", label: "", key: "", scope: "project", expires_days: "" });
       setShowForm(false);
     }
   }
@@ -160,6 +168,17 @@ export default function ApiKeysPage() {
                   <option value="personal">Personal (only you)</option>
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-[#64748b] font-mono mb-1.5">Expiration (days)</label>
+              <input
+                type="number"
+                min="1"
+                value={form.expires_days}
+                onChange={(e) => setForm({ ...form, expires_days: e.target.value })}
+                placeholder="e.g. 30, 90 (empty = never expires)"
+                className={inputClass}
+              />
             </div>
             <div>
               <label className="block text-[11px] text-[#64748b] font-mono mb-1.5">Label (optional)</label>
@@ -280,6 +299,17 @@ function KeyRow({ k, userId, onToggle, onDelete, readonly }) {
           }`}>
             {k.scope}
           </span>
+          {k.expires_at && (() => {
+            const expires = new Date(k.expires_at);
+            const isExpired = expires < new Date();
+            return (
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                isExpired ? "bg-red-500/10 text-red-400" : "bg-orange-500/10 text-orange-400"
+              }`}>
+                {isExpired ? "Expired" : `Expires: ${expires.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+              </span>
+            );
+          })()}
         </div>
       </div>
 

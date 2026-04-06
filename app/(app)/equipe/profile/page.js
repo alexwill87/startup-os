@@ -113,6 +113,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Phone" value={profile.phone || ""} onChange={(v) => saveField("phone", v)} placeholder="+33 6 12 34 56 78" />
           <Field label="LinkedIn" value={profile.linkedin || ""} onChange={(v) => saveField("linkedin", v)} placeholder="https://linkedin.com/in/..." />
+          <Field label="Telegram Chat ID" value={profile.telegram_chat_id || ""} onChange={(v) => saveField("telegram_chat_id", v)} placeholder="Your Telegram chat ID (from @RadarPMBot /start)" />
         </div>
       </Card>
 

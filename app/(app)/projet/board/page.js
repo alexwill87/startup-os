@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase, BUILDERS, SPRINTS } from "@/lib/supabase";
+import { logActivity } from "@/lib/activity";
 import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
@@ -50,17 +51,20 @@ export default function BoardPage() {
     e.preventDefault();
     if (!form.title.trim()) return;
     await supabase.from("cockpit_tasks").insert({ ...form, sprint: sprintFilter, status: "todo" });
+    logActivity("created", "task", { title: form.title });
     setForm({ title: "", description: "", builder: "A", priority: "medium", task_ref: "", pr_url: "" });
     setShowForm(false);
   }
 
   async function moveTask(id, newStatus) {
     await supabase.from("cockpit_tasks").update({ status: newStatus }).eq("id", id);
+    logActivity("updated", "task", { title: "moved to " + newStatus });
   }
 
   async function deleteTask(id) {
     if (!confirm("Supprimer cette tâche ?")) return;
     await supabase.from("cockpit_tasks").delete().eq("id", id);
+    logActivity("deleted", "task", {});
   }
 
   return (

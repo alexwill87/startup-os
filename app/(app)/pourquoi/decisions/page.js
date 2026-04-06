@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase, BUILDERS } from "@/lib/supabase";
+import { logActivity } from "@/lib/activity";
 import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
@@ -63,6 +64,7 @@ export default function DecisionsPage() {
       status: "open",
       created_by: user?.id,
     });
+    logActivity("created", "decision", { title: form.title });
     setForm({ title: "", context: "" });
     setShowForm(false);
   }
@@ -76,6 +78,7 @@ export default function DecisionsPage() {
       vote: cf.vote || "neutral",
       author_id: user?.id,
     });
+    logActivity("commented", "decision", { title: decisionId });
     setCommentForm({ ...commentForm, [decisionId]: { body: "", vote: "neutral" } });
   }
 
@@ -86,6 +89,7 @@ export default function DecisionsPage() {
       .from("cockpit_decisions")
       .update({ status: "decided", decision })
       .eq("id", id);
+    logActivity("resolved", "decision", { title: id });
   }
 
   async function reopenDecision(id) {

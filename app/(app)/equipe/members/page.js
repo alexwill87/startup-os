@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase, SPRINTS } from "@/lib/supabase";
+import { logActivity } from "@/lib/activity";
 import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
@@ -61,6 +62,8 @@ export default function MembersPage() {
       return;
     }
 
+    logActivity("invited", "member", { title: inviteForm.email });
+
     // Send Supabase magic link invite
     const { error: inviteError } = await supabase.auth.signInWithOtp({
       email: inviteForm.email,
@@ -85,6 +88,7 @@ export default function MembersPage() {
 
   async function revokeMember(id) {
     await supabase.from("cockpit_members").update({ status: "revoked" }).eq("id", id);
+    logActivity("updated", "member", { title: "revoked" });
   }
 
   async function resendInvite(email) {
