@@ -34,6 +34,7 @@ const PILLARS = [
     items: [
       { href: "/ressources/links", label: "Links & Docs" },
       { href: "/ressources/files", label: "Files" },
+      { href: "/ressources/gallery", label: "Gallery" },
       { href: "/ressources/tools", label: "Tools & APIs" },
       { href: "/ressources/budget", label: "Budget" },
     ],

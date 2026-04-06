@@ -73,10 +73,50 @@ export default function FilesPage() {
     setLoading(false);
   }
 
+  // Compress images over 500KB
+  async function compressImage(file, maxWidth = 1920, quality = 0.8) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            const compressed = new File([blob], file.name, { type: "image/jpeg" });
+            resolve(compressed);
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   async function handleUpload(fileObj) {
     if (!fileObj) return;
-    setSelectedFile(fileObj);
-    setForm((f) => ({ ...f, title: fileObj.name.replace(/\.[^/.]+$/, "") }));
+
+    // Auto-compress large images
+    let processedFile = fileObj;
+    if (fileObj.type.startsWith("image/") && fileObj.size > 512000) {
+      processedFile = await compressImage(fileObj);
+    }
+
+    setSelectedFile(processedFile);
+    setForm((f) => ({
+      ...f,
+      title: fileObj.name.replace(/\.[^/.]+$/, ""),
+      _originalSize: fileObj.size,
+      _compressedSize: processedFile.size,
+      _wasCompressed: processedFile.size < fileObj.size,
+    }));
     setShowUpload(true);
   }
 
@@ -188,6 +228,11 @@ export default function FilesPage() {
           <h3 className="text-sm font-bold text-white mb-4">
             Uploading: <span className="text-[#94a3b8] font-normal">{selectedFile.name}</span>
             <span className="text-[10px] text-[#475569] ml-2 font-mono">{formatSize(selectedFile.size)}</span>
+            {form._wasCompressed && (
+              <span className="text-[10px] text-emerald-400 ml-2 font-mono">
+                Compressed from {formatSize(form._originalSize)} (-{Math.round((1 - form._compressedSize / form._originalSize) * 100)}%)
+              </span>
+            )}
           </h3>
           <form onSubmit={submitUpload} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
