@@ -168,9 +168,9 @@ export default function Sidebar() {
 
           return (
             <div key={pillar.id} className="mb-1">
-              <button
+              <div
                 onClick={() => togglePillar(pillar.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all duration-150 ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all duration-150 cursor-pointer ${
                   pillarActive
                     ? "text-white font-semibold bg-[#161b22]"
                     : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
@@ -182,13 +182,15 @@ export default function Sidebar() {
                 />
                 {!collapsed && (
                   <>
-                    <span className="flex-1 text-left">{pillar.label}</span>
-                    <span className="text-[10px] text-[#475569]">
+                    <Link href={`/${pillar.id}`} className="flex-1 text-left hover:underline" onClick={(e) => e.stopPropagation()}>
+                      {pillar.label}
+                    </Link>
+                    <span className="text-[10px] text-[#475569]" onClick={() => togglePillar(pillar.id)}>
                       {isOpen ? "−" : "+"}
                     </span>
                   </>
                 )}
-              </button>
+              </div>
 
               {isOpen && !collapsed && (
                 <div className="ml-4 mt-1 space-y-0.5 border-l border-[#1e293b]">
