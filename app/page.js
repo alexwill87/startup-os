@@ -8,13 +8,20 @@ import Card from "@/app/components/Card";
 import Link from "next/link";
 
 const PILLAR_META = [
-  { id: "why", label: "Why", color: "#3b82f6", href: "/pourquoi/mission" },
-  { id: "team", label: "Team", color: "#8b5cf6", href: "/equipe/members" },
-  { id: "resources", label: "Resources", color: "#10b981", href: "/ressources/links" },
-  { id: "project", label: "Project", color: "#f59e0b", href: "/projet/overview" },
-  { id: "market", label: "Market", color: "#ec4899", href: "/clients/personas" },
-  { id: "finances", label: "Finances", color: "#ef4444", href: "/finances/budget-track" },
-  { id: "analytics", label: "Analytics", color: "#06b6d4", href: "/analytics/kpis" },
+  { id: "why", label: "Why", color: "#3b82f6", href: "/pourquoi/mission",
+    subpages: [{ label: "Vision", href: "/pourquoi/mission" }, { label: "Notes", href: "/pourquoi/vision-strategy" }, { label: "Decisions", href: "/pourquoi/decisions" }] },
+  { id: "team", label: "Team", color: "#8b5cf6", href: "/equipe/members",
+    subpages: [{ label: "Members", href: "/equipe/members" }, { label: "Roles", href: "/equipe/roles" }, { label: "My Profile", href: "/equipe/profile" }] },
+  { id: "resources", label: "Resources", color: "#10b981", href: "/ressources/links",
+    subpages: [{ label: "Links", href: "/ressources/links" }, { label: "Files", href: "/ressources/files" }, { label: "Gallery", href: "/ressources/gallery" }, { label: "Tools", href: "/ressources/tools" }] },
+  { id: "project", label: "Project", color: "#f59e0b", href: "/projet/overview",
+    subpages: [{ label: "Overview", href: "/projet/overview" }, { label: "Board", href: "/projet/board" }, { label: "Roadmap", href: "/projet/roadmap" }, { label: "Docs", href: "/projet/docs" }, { label: "Retro", href: "/projet/retro" }] },
+  { id: "market", label: "Market", color: "#ec4899", href: "/clients/personas",
+    subpages: [{ label: "Personas", href: "/clients/personas" }, { label: "Competitors", href: "/clients/competitors" }, { label: "Feedback", href: "/clients/feedback" }] },
+  { id: "finances", label: "Finances", color: "#ef4444", href: "/finances/budget-track",
+    subpages: [{ label: "Budget", href: "/finances/budget-track" }, { label: "Costs", href: "/finances/costs" }, { label: "Revenue", href: "/finances/revenue" }] },
+  { id: "analytics", label: "Analytics", color: "#06b6d4", href: "/analytics/kpis",
+    subpages: [{ label: "KPIs", href: "/analytics/kpis" }, { label: "Alerts", href: "/analytics/alerts" }, { label: "Health", href: "/analytics/health" }] },
 ];
 
 const EMOJIS = { created: "🆕", updated: "✏️", completed: "✅", commented: "💬", invited: "👋", resolved: "🎯", deleted: "🗑️", responded: "🤖" };
@@ -54,8 +61,8 @@ export default function Home() {
 
   const pillars = PILLAR_META.map((p) => ({ ...p, ...completion[p.id] }));
   const overallPct = Math.round(pillars.reduce((s, p) => s + p.pct, 0) / pillars.length);
-  const totalChecks = pillars.reduce((s, p) => s + p.total, 0);
-  const totalFilled = pillars.reduce((s, p) => s + p.filled, 0);
+  const totalChecks = pillars.reduce((s, p) => s + p.required || p.total, 0);
+  const totalFilled = pillars.reduce((s, p) => s + p.done, 0);
 
   const currentPhase = pillars.find((p) => p.pct < 100);
 
@@ -98,12 +105,12 @@ export default function Home() {
             <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: currentPhase.color }} />
             <span className="text-sm font-bold text-white">Current focus: {currentPhase.label}</span>
             <span className="text-xs font-mono ml-auto" style={{ color: currentPhase.color }}>
-              {currentPhase.filled}/{currentPhase.total} ({currentPhase.pct}%)
+              {currentPhase.done}/{currentPhase.required} ({currentPhase.pct}%)
             </span>
           </div>
           <p className="text-xs text-[#64748b]">
-            {currentPhase.checks.filter((c) => !c.done).slice(0, 3).map((c) => c.label).join(" · ")}
-            {currentPhase.checks.filter((c) => !c.done).length > 3 && ` · +${currentPhase.checks.filter((c) => !c.done).length - 3} more`}
+            {(currentPhase.items || []).filter((i) => i.status === "todo" && i.required).slice(0, 3).map((i) => i.title).join(" · ")}
+            {(currentPhase.items || []).filter((i) => i.status === "todo" && i.required).length > 3 && ` · +${(currentPhase.items || []).filter((i) => i.status === "todo" && i.required).length - 3} more`}
           </p>
         </div>
       )}
@@ -112,50 +119,64 @@ export default function Home() {
       <div>
         <h2 className="text-xs font-bold text-[#94a3b8] mb-4 uppercase tracking-widest">7 Pillars — {totalFilled}/{totalChecks} completed</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pillars.map((p) => (
+          {pillars.map((p) => {
+            const todoItems = (p.items || []).filter((i) => i.status === "todo" && i.required);
+            const doneItems = (p.items || []).filter((i) => i.status === "done" || i.status === "validated");
+            return (
             <div key={p.id}>
-              <Link href={p.href}>
-                <Card className="card-hover cursor-pointer group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full" style={{ background: p.color }} />
-                      <span className="text-sm font-bold text-white group-hover:text-[#93c5fd] transition-colors">{p.label}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-lg font-extrabold" style={{ color: p.pct === 100 ? "#10b981" : p.pct > 0 ? p.color : "#334155" }}>
-                        {p.pct}%
-                      </span>
-                      <span className="text-[10px] text-[#475569] font-mono ml-1">{p.filled}/{p.total}</span>
-                    </div>
+              <Card className="h-full">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <Link href={p.href} className="flex items-center gap-2 group">
+                    <span className="w-3 h-3 rounded-full" style={{ background: p.color }} />
+                    <span className="text-sm font-bold text-white group-hover:text-[#93c5fd] transition-colors">{p.label}</span>
+                  </Link>
+                  <div className="text-right">
+                    <span className="text-lg font-extrabold" style={{ color: p.pct === 100 ? "#10b981" : p.pct > 0 ? p.color : "#334155" }}>
+                      {p.pct}%
+                    </span>
+                    <span className="text-[10px] text-[#475569] font-mono ml-1">{p.done}/{p.required}</span>
                   </div>
+                </div>
 
-                  {/* Progress bar */}
-                  <div className="h-1.5 bg-[#1e293b] rounded-full overflow-hidden mb-3">
-                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${p.pct}%`, background: p.pct === 100 ? "#10b981" : p.color }} />
-                  </div>
+                {/* Progress bar */}
+                <div className="h-1.5 bg-[#1e293b] rounded-full overflow-hidden mb-3">
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${p.pct}%`, background: p.pct === 100 ? "#10b981" : p.color }} />
+                </div>
 
-                  {/* Summary: show first 3 unchecked items */}
-                  <div className="space-y-1">
-                    {p.checks.filter((c) => !c.done).slice(0, 3).map((c, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <span className="text-[11px] text-[#334155]">○</span>
-                        <span className="text-[11px] text-[#94a3b8]">{c.label}</span>
-                      </div>
+                {/* Sub-pages */}
+                {p.subpages && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {p.subpages.map((sp) => (
+                      <Link key={sp.href} href={sp.href} className="text-[10px] px-2 py-1 rounded bg-[#1e293b] text-[#64748b] hover:text-white hover:bg-[#334155] transition-colors font-mono">
+                        {sp.label}
+                      </Link>
                     ))}
-                    {p.checks.filter((c) => !c.done).length > 3 && (
-                      <div className="text-[10px] text-[#475569] font-mono pl-4">
-                        +{p.checks.filter((c) => !c.done).length - 3} more items
-                      </div>
-                    )}
-                    {p.pct === 100 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-emerald-400">✓</span>
+                  </div>
+                )}
+
+                {/* Unchecked items */}
+                <div className="space-y-1">
+                  {todoItems.slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <span className="text-[11px] text-[#334155]">○</span>
+                      <span className="text-[11px] text-[#94a3b8]">{item.title}</span>
+                      <span className="text-[9px] text-[#334155] font-mono ml-auto">{item.category}</span>
+                    </div>
+                  ))}
+                  {todoItems.length > 3 && (
+                    <div className="text-[10px] text-[#475569] font-mono pl-4">
+                      +{todoItems.length - 3} more items to do
+                    </div>
+                  )}
+                  {p.pct === 100 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-emerald-400">✓</span>
                         <span className="text-[11px] text-emerald-400">All checks passed</span>
                       </div>
                     )}
                   </div>
                 </Card>
-              </Link>
 
               {/* Expand details button */}
               {p.total > 3 && (
@@ -163,27 +184,33 @@ export default function Home() {
                   onClick={() => setShowDetails(showDetails === p.id ? null : p.id)}
                   className="w-full text-[10px] text-[#475569] font-mono py-1 hover:text-[#94a3b8] transition-colors"
                 >
-                  {showDetails === p.id ? "Hide details" : `Show all ${p.total} checks`}
+                  {showDetails === p.id ? "Hide details" : `Show all ${p.total} items`}
                 </button>
               )}
 
               {/* Full checklist */}
               {showDetails === p.id && (
                 <div className="mt-1 p-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b] space-y-1">
-                  {p.checks.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 py-0.5">
-                      <span className="text-[11px]" style={{ color: c.done ? "#10b981" : "#334155" }}>
-                        {c.done ? "✓" : "○"}
+                  {(p.items || []).map((item) => {
+                    const isDone = item.status === "done" || item.status === "validated";
+                    return (
+                    <div key={item.id} className="flex items-center gap-2 py-0.5">
+                      <span className="text-[11px]" style={{ color: isDone ? "#10b981" : "#334155" }}>
+                        {isDone ? "✓" : "○"}
                       </span>
-                      <span className={`text-[11px] ${c.done ? "text-[#64748b]" : "text-[#94a3b8]"}`}>
-                        {c.label}
+                      <span className={`text-[11px] ${isDone ? "text-[#64748b]" : "text-[#94a3b8]"}`}>
+                        {item.title}
                       </span>
+                      <span className="text-[9px] text-[#334155] font-mono ml-auto">{item.category}</span>
+                      {!item.required && <span className="text-[9px] text-[#334155] font-mono">opt</span>}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
 
           {/* Config card */}
           <Link href="/setup/checklist">
