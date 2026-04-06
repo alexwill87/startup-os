@@ -188,6 +188,26 @@ export default function Sidebar() {
         >
           {collapsed ? "★" : "Leaderboard"}
         </Link>
+        <Link
+          href="/objectives"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/objectives"
+              ? "bg-[#1e293b] text-white font-semibold"
+              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "◎" : "Objectives"}
+        </Link>
+        <Link
+          href="/athena"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/athena"
+              ? "bg-[#a855f7]/20 text-[#a855f7] font-semibold"
+              : "text-[#64748b] hover:text-[#a855f7] hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "◆" : "Athena QA"}
+        </Link>
       </div>
 
       {/* Pillars */}
