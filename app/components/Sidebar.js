@@ -33,6 +33,7 @@ const PILLARS = [
     color: "#10b981",
     items: [
       { href: "/ressources/links", label: "Links & Docs" },
+      { href: "/ressources/files", label: "Files" },
       { href: "/ressources/tools", label: "Tools & APIs" },
       { href: "/ressources/budget", label: "Budget" },
     ],
