@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase, SPRINTS } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import { calculateCompletion } from "@/lib/completion";
+import { syncChecklist } from "@/lib/sync-checklist";
 import Card from "@/app/components/Card";
 import Link from "next/link";
 
@@ -36,6 +37,8 @@ export default function Home() {
 
   useEffect(() => {
     async function load() {
+      // Sync checklist with actual content before calculating
+      await syncChecklist();
       const [comp, { count: taskTotal }, { count: taskDone }, { data: actData }] = await Promise.all([
         calculateCompletion(),
         supabase.from("cockpit_tasks").select("*", { count: "exact", head: true }),

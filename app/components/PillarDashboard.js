@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthProvider";
 import { logActivity } from "@/lib/activity";
+import { syncChecklist } from "@/lib/sync-checklist";
 import Card from "./Card";
 import PageHeader from "./PageHeader";
 
@@ -43,6 +44,7 @@ export default function PillarDashboard({ pillar, label, color, subpages }) {
   }, [pillar]);
 
   async function fetchAll() {
+    await syncChecklist();
     const [{ data: checklistData }, { data: ownerData }, { data: memberData }, { data: responseData }] = await Promise.all([
       supabase.from("cockpit_checklist").select("*").eq("pillar", pillar).order("sort_order", { ascending: true }),
       supabase.from("cockpit_config").select("value").eq("key", `pillar_owner_${pillar}`).maybeSingle(),
