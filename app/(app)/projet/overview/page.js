@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
+const BUILDER_LIST = Object.values(BUILDERS);
 const COLOR = "#f59e0b";
 
 export default function OverviewPage() {
@@ -95,7 +96,7 @@ export default function OverviewPage() {
       <div>
         <h3 className="text-sm font-bold text-[#94a3b8] uppercase tracking-widest mb-4">Progression par builder</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {BUILDERS.map((b) => {
+          {BUILDER_LIST.map((b) => {
             const st = builderStats(b.id);
             return (
               <Card key={b.id}>

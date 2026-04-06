@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
+const BUILDER_LIST = Object.values(BUILDERS);
 const COLOR = "#f59e0b";
 const STATUS_DOTS = {
   todo: "bg-zinc-500",
@@ -128,7 +129,7 @@ export default function RoadmapPage() {
               {/* Expanded: tasks grouped by builder */}
               {isOpen && (
                 <div className="mt-2 ml-4 space-y-3">
-                  {BUILDERS.map((builder) => {
+                  {BUILDER_LIST.map((builder) => {
                     const bt = sprintTasks.filter((t) => t.builder === builder.id);
                     if (bt.length === 0) return null;
                     return (

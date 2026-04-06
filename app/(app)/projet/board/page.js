@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
+const BUILDER_LIST = Object.values(BUILDERS);
 const COLOR = "#f59e0b";
 const COLUMNS = [
   { key: "todo", label: "Todo", bg: "bg-zinc-700" },
@@ -114,7 +115,7 @@ export default function BoardPage() {
               onChange={(e) => setForm({ ...form, builder: e.target.value })}
               className="bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm text-white"
             >
-              {BUILDERS.map((b) => (
+              {BUILDER_LIST.map((b) => (
                 <option key={b.id} value={b.id}>{b.id} — {b.name}</option>
               ))}
             </select>
