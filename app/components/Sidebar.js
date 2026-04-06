@@ -158,6 +158,26 @@ export default function Sidebar() {
         >
           {collapsed ? "A" : "Activity"}
         </Link>
+        <Link
+          href="/guide"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/guide"
+              ? "bg-[#1e293b] text-white font-semibold"
+              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "?" : "Guide"}
+        </Link>
+        <Link
+          href="/feedback"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+            pathname === "/feedback"
+              ? "bg-[#1e293b] text-white font-semibold"
+              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+          }`}
+        >
+          {collapsed ? "!" : "Feedback"}
+        </Link>
       </div>
 
       {/* Pillars */}
