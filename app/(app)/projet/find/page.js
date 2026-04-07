@@ -37,13 +37,15 @@ export default function FindPage() {
 
   async function fetchAll() {
     try {
-      const [{ data: disc }, { data: objs }, { data: vis }, { data: feats }] = await Promise.all([
+      const [{ data: disc1 }, { data: disc2 }, { data: objs }, { data: vis }, { data: feats }] = await Promise.all([
         supabase.from("cockpit_vision").select("*").eq("topic", "discovery").order("created_at", { ascending: false }),
+        supabase.from("cockpit_vision").select("*").eq("topic", "other").ilike("title", "[DISCOVERY]%").order("created_at", { ascending: false }),
         supabase.from("cockpit_objectives").select("*").order("sort_order"),
         supabase.from("cockpit_vision").select("title, body").eq("topic", "product"),
         supabase.from("cockpit_vision").select("title").eq("topic", "roadmap"),
       ]);
-      const parsed = (disc || []).map((r) => {
+      const allDisc = [...(disc1 || []), ...(disc2 || [])].map((d) => ({ ...d, title: d.title.replace("[DISCOVERY] ", "") }));
+      const parsed = allDisc.map((r) => {
         let m = {};
         try { m = JSON.parse(r.body || "{}"); } catch { m = { description: r.body }; }
         return { ...r, phase: m.phase || "idea", description: m.description || "", prompt: m.prompt || "",
@@ -99,12 +101,18 @@ Return ONLY a JSON array. No markdown, no explanation. Example:
       if (jsonMatch) {
         const items = JSON.parse(jsonMatch[0]);
         if (Array.isArray(items)) {
+          let created = 0;
           for (const item of items) {
             const body = JSON.stringify({ phase: "idea", description: item.description || "", prompt: item.prompt || "",
               kpi_expected: item.kpi_expected || "", why: item.why || "", goal_id: "" });
-            await supabase.from("cockpit_vision").insert({ topic: "discovery", title: item.title, body, builder: member?.builder, created_by: member?.user_id });
+            const { error } = await supabase.from("cockpit_vision").insert({ topic: "discovery", title: item.title, body, builder: member?.builder, created_by: member?.user_id });
+            if (error) {
+              // Fallback: use 'other' topic if 'discovery' not yet in constraint
+              await supabase.from("cockpit_vision").insert({ topic: "other", title: `[DISCOVERY] ${item.title}`, body, builder: member?.builder, created_by: member?.user_id });
+            }
+            created++;
           }
-          await logActivity("created", "discovery", { title: `AI generated ${items.length} feature ideas` });
+          await logActivity("created", "discovery", { title: `AI generated ${created} feature ideas` });
           fetchAll();
         }
       }
@@ -179,7 +187,10 @@ Next.js 16, Supabase (PostgreSQL + Auth + Realtime + Storage), Tailwind CSS v4, 
         if (!item.title) continue;
         const body = JSON.stringify({ phase: "idea", description: item.description || "", prompt: item.prompt || "",
           kpi_expected: item.kpi_expected || "", why: item.why || "", goal_id: "" });
-        await supabase.from("cockpit_vision").insert({ topic: "discovery", title: item.title, body, builder: member?.builder, created_by: member?.user_id });
+        const { error } = await supabase.from("cockpit_vision").insert({ topic: "discovery", title: item.title, body, builder: member?.builder, created_by: member?.user_id });
+        if (error) {
+          await supabase.from("cockpit_vision").insert({ topic: "other", title: `[DISCOVERY] ${item.title}`, body, builder: member?.builder, created_by: member?.user_id });
+        }
         count++;
       }
       await logActivity("created", "discovery", { title: `Uploaded ${count} feature ideas` });
