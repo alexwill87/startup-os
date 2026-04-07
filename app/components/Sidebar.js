@@ -43,6 +43,7 @@ const ALL_PILLARS = [
       { href: "/ressources/gallery", label: "Gallery" },
       { href: "/ressources/tools", label: "Tools & APIs" },
       { href: "/ressources/budget", label: "Budget" },
+      { href: "/projet/docs", label: "Documentation" },
     ],
   },
   {
@@ -51,14 +52,21 @@ const ALL_PILLARS = [
     color: "#f59e0b",
     access: ["admin", "cofounder", "mentor"],
     items: [
-      { href: "/projet/features", label: "Features" },
-      { href: "/projet/tasks", label: "Tasks" },
-      { href: "/projet/workflow", label: "Workflow" },
-      { href: "/projet/find", label: "Find" },
       { href: "/projet/roadmap", label: "Roadmap" },
-      { href: "/projet/docs", label: "Documentation" },
+      { href: "/projet/features", label: "Features" },
+      { href: "/projet/find", label: "Find" },
       { href: "/projet/retro", label: "Retrospective" },
       { href: "/feedback", label: "Feedback" },
+    ],
+  },
+  {
+    id: "worklist",
+    label: "WorkList",
+    color: "#f97316",
+    access: ["admin", "cofounder", "mentor"],
+    items: [
+      { href: "/projet/tasks", label: "Tasks" },
+      { href: "/projet/workflow", label: "Workflow" },
     ],
   },
   {
