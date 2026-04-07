@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/AuthProvider";
 import LoginScreen from "./LoginScreen";
 import Sidebar from "./Sidebar";
+import FeedbackWidget from "./FeedbackWidget";
 
 export default function AuthGate({ children }) {
   const { user, member, loading } = useAuth();
@@ -31,6 +32,7 @@ export default function AuthGate({ children }) {
           {children}
         </div>
       </main>
+      <FeedbackWidget />
     </div>
   );
 }
