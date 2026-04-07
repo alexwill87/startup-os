@@ -38,7 +38,15 @@ export default function ChatPanel() {
         }),
       });
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.reply || "No response." }]);
+      let content = data.reply || "No response.";
+      // Show executed actions
+      if (data.actions?.length > 0) {
+        const actionLines = data.actions.map((a) =>
+          a.status === "done" ? `Done: ${a.result}` : `Error: ${a.error}`
+        );
+        content += "\n\n" + actionLines.join("\n");
+      }
+      setMessages((prev) => [...prev, { role: "assistant", content, actions: data.actions }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Try again." }]);
     } finally {
