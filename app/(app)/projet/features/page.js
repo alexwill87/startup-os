@@ -51,11 +51,13 @@ export default function FeaturesPage() {
 
   async function fetchAll() {
     try {
-      const [{ data: roadmap }, { data: objs }] = await Promise.all([
+      const [{ data: r1 }, { data: r2 }, { data: objs }] = await Promise.all([
         supabase.from("cockpit_vision").select("*").eq("topic", "roadmap").order("created_at"),
+        supabase.from("cockpit_vision").select("*").eq("topic", "other").ilike("title", "[ROADMAP]%").order("created_at"),
         supabase.from("cockpit_objectives").select("id, title, pillar").order("sort_order"),
       ]);
-      const parsed = (roadmap || []).map((r) => {
+      const roadmap = [...(r1 || []), ...(r2 || [])].map((d) => ({ ...d, title: d.title.replace("[ROADMAP] ", "") }));
+      const parsed = roadmap.map((r) => {
         let m = {};
         try { m = JSON.parse(r.body || "{}"); } catch { m = { description: r.body }; }
         return { ...r, phase: m.phase || "proposed", description: m.description || "", prompt: m.prompt || "",
@@ -83,10 +85,10 @@ export default function FeaturesPage() {
     try {
       const goalsCtx = goals.map((g) => `[${g.pillar}] ${g.title}`).join("; ");
       const prompts = {
-        description: `Feature "${form.title}" for Radar (job platform monitoring). Write 1-2 sentence description. Goals: ${goalsCtx}. English, no quotes.`,
-        kpi_expected: `Feature "${form.title}": ${form.description || ""}. What measurable KPI should this feature impact? Give 1 specific metric with a target. Example: "Increase waitlist signups by 30%". English, one line.`,
-        prompt: `Write a technical prompt for an AI agent to build "${form.title}" in Next.js+Supabase+Tailwind. Desc: ${form.description || "tbd"}. Max 150 words, be specific.`,
-        checklist: `Break "${form.title}" (${form.description || ""}) into 3-6 tasks. Return JSON string array only. Example: ["Task 1","Task 2"]`,
+        description: `RESPOND WITH ONLY THE DESCRIPTION, NO PREAMBLE. Write exactly 1-2 sentences describing what the feature "${form.title}" does for Radar (a job platform monitoring tool with AI alerts and tailored CVs). Project goals: ${goalsCtx}.`,
+        kpi_expected: `RESPOND WITH ONLY THE KPI, NO PREAMBLE. One specific measurable metric with a target number for the feature "${form.title}". Format: "[Metric] by [X]% within [timeframe]". Example: "Increase daily active users by 25% within 2 months".`,
+        prompt: `RESPOND WITH ONLY THE TECHNICAL PROMPT, NO PREAMBLE. Write a clear, specific instruction (100-150 words) for a coding AI agent to implement "${form.title}" in a Next.js 16 + Supabase + Tailwind v4 app. Include: what components to create, what Supabase tables to use/create, what the UI should look like. Description: ${form.description || form.title}.`,
+        checklist: `RESPOND WITH ONLY A JSON ARRAY, NO PREAMBLE, NO MARKDOWN. Break down "${form.title}" into 3-6 implementation tasks. Example: ["Create database table","Build API endpoint","Implement UI component","Add tests"]`,
       };
       if (!prompts[field]) return;
       const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
@@ -116,7 +118,10 @@ export default function FeaturesPage() {
     const body = JSON.stringify({ phase: "proposed", description: form.description.trim(), prompt: form.prompt.trim(),
       votes: [], ready: false, goal_id: form.goal_id, assigned_to: form.assigned_to, checklist: cl,
       kpi_expected: form.kpi_expected.trim(), tags: form.tags });
-    await supabase.from("cockpit_vision").insert({ topic: "roadmap", title: form.title.trim(), body, builder: member?.builder, created_by: member?.user_id });
+    const { error } = await supabase.from("cockpit_vision").insert({ topic: "roadmap", title: form.title.trim(), body, builder: member?.builder, created_by: member?.user_id });
+    if (error) {
+      await supabase.from("cockpit_vision").insert({ topic: "other", title: `[ROADMAP] ${form.title.trim()}`, body, builder: member?.builder, created_by: member?.user_id });
+    }
     await logActivity("created", "feature", { title: form.title.trim() });
     setForm({ title: "", description: "", prompt: "", goal_id: "", assigned_to: "", kpi_expected: "", tags: [], _checklist: [] });
     setShowForm(false);
@@ -318,8 +323,9 @@ function FieldWithAI({ label, value, onChange, onAI, loading, rows, mono, show }
         <label className="text-[10px] text-[#475569] font-bold uppercase">{label}</label>
         {show && <button type="button" onClick={onAI} disabled={loading} className="text-[10px] font-bold text-purple-400 hover:text-purple-300 disabled:opacity-50">{loading ? "..." : "AI"}</button>}
       </div>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows || 2}
-        className={`w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-xs outline-none resize-none ${mono ? "text-amber-300 font-mono" : "text-white"}`} />
+      <textarea value={value} onChange={(e) => onChange(e.target.value)}
+        rows={Math.max(rows || 2, Math.ceil((value || "").length / 80))}
+        className={`w-full py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-sm outline-none resize-y leading-relaxed ${mono ? "text-amber-300 font-mono text-xs" : "text-white"}`} />
     </div>
   );
 }
@@ -360,15 +366,21 @@ function FeatureCard({ item, goals, members, member, threshold, canEdit, onVote,
       {expanded && (
         <div className="mt-3 pt-3 border-t border-[#1e293b] space-y-3">
           {item.kpi_expected && (
-            <div className="p-2 rounded-lg bg-cyan-500/5 border border-cyan-500/20">
-              <p className="text-[9px] font-bold text-cyan-400 uppercase mb-0.5">Expected KPI</p>
-              <p className="text-xs text-cyan-200/80">{item.kpi_expected}</p>
+            <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/20">
+              <p className="text-[10px] font-bold text-cyan-400 uppercase mb-1">Expected KPI</p>
+              <p className="text-sm text-cyan-200/80 leading-relaxed">{item.kpi_expected}</p>
+            </div>
+          )}
+          {item.description && (
+            <div>
+              <p className="text-[10px] font-bold text-[#475569] uppercase mb-1">Description</p>
+              <p className="text-sm text-[#e2e8f0] leading-relaxed">{item.description}</p>
             </div>
           )}
           {item.prompt && (
-            <div className="p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
-              <p className="text-[9px] font-bold text-amber-400 uppercase mb-0.5">Prompt</p>
-              <p className="text-[11px] text-amber-200/80 font-mono whitespace-pre-wrap">{item.prompt}</p>
+            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+              <p className="text-[10px] font-bold text-amber-400 uppercase mb-1">Prompt</p>
+              <p className="text-xs text-amber-200/80 font-mono whitespace-pre-wrap leading-relaxed">{item.prompt}</p>
             </div>
           )}
           <div>
