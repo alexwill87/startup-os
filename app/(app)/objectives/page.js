@@ -1,511 +1,365 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/AuthProvider";
+import { useAuth, useMembers } from "@/lib/AuthProvider";
 import { logActivity } from "@/lib/activity";
 import Card from "@/app/components/Card";
-import PageHeader from "@/app/components/PageHeader";
 
 const PILLARS = [
-  { value: "produit", label: "Produit", color: "#3b82f6" },
-  { value: "tech", label: "Tech", color: "#10b981" },
-  { value: "equipe", label: "Equipe", color: "#f59e0b" },
-  { value: "finances", label: "Finances", color: "#ef4444" },
-  { value: "legal", label: "Legal", color: "#8b5cf6" },
-  { value: "croissance", label: "Croissance", color: "#ec4899" },
-  { value: "operations", label: "Operations", color: "#06b6d4" },
+  { id: "why", label: "Why", color: "#3b82f6", desc: "Define the mission, the problem we solve, and why now." },
+  { id: "team", label: "Team", color: "#8b5cf6", desc: "Build the right team with clear roles and accountability." },
+  { id: "resources", label: "Resources", color: "#10b981", desc: "Gather tools, documents, and assets to move fast." },
+  { id: "project", label: "Project", color: "#f59e0b", desc: "Ship features, track progress, and stay on schedule." },
+  { id: "market", label: "Market", color: "#ec4899", desc: "Understand users, competitors, and market positioning." },
+  { id: "finances", label: "Finances", color: "#ef4444", desc: "Control costs, plan revenue, and reach sustainability." },
+  { id: "analytics", label: "Analytics", color: "#06b6d4", desc: "Measure what matters and make data-driven decisions." },
 ];
 
-const STATUS_COLORS = {
-  draft: "bg-gray-500/20 text-gray-300",
-  proposed: "bg-blue-500/20 text-blue-300",
-  approved: "bg-green-500/20 text-green-300",
-  active: "bg-amber-500/20 text-amber-300",
-  completed: "bg-emerald-500/20 text-emerald-300",
-  dropped: "bg-red-500/20 text-red-300",
-};
-
-const EXAMPLE_OBJECTIVES = [
-  "Lancer le MVP du cockpit avec les 8 piliers fonctionnels",
-  "Atteindre 10 utilisateurs actifs sur la plateforme",
-  "Deployer le systeme de validation par consensus",
-  "Completer la documentation de tous les processus cles",
-  "Mettre en place le pipeline CI/CD complet",
-  "Securiser toutes les API keys et acces",
-  "Implementer le dashboard analytique temps reel",
-  "Recruter et onboarder 3 nouveaux builders",
-  "Atteindre un QA score Athena > 80%",
-  "Livrer le bot Telegram avec toutes les commandes",
-];
-
-const REQUIRED_APPROVALS = 2;
+const MAX_PER_PILLAR = 3;
 
 export default function ObjectivesPage() {
-  const { user } = useAuth();
+  const { member, canEdit } = useAuth();
+  const members = useMembers();
   const [objectives, setObjectives] = useState([]);
   const [validations, setValidations] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [addingPillar, setAddingPillar] = useState(null);
+  const [newText, setNewText] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    number: "",
-    title: "",
-    description: "",
-    success_criteria: "",
-    pillar: "",
-  });
 
-  const fetchData = useCallback(async () => {
-    const [objRes, valRes] = await Promise.all([
-      supabase
-        .from("cockpit_objectives")
-        .select("*")
-        .order("sort_order", { ascending: true })
-        .order("number", { ascending: true }),
-      supabase.from("cockpit_objective_validations").select("*"),
-    ]);
-    if (objRes.data) setObjectives(objRes.data);
-    if (valRes.data) setValidations(valRes.data);
-    setLoading(false);
-  }, []);
+  // Count active members (for validation threshold)
+  const activeMembers = members.filter((m) => m.status === "active" && m.role !== "observer");
+  const threshold = Math.max(2, Math.ceil(activeMembers.length * 0.66));
 
   useEffect(() => {
-    fetchData();
-
-    const objChannel = supabase
-      .channel("objectives-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "cockpit_objectives" },
-        () => fetchData()
-      )
+    fetchAll();
+    const sub = supabase
+      .channel("objectives_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "cockpit_objectives" }, fetchAll)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cockpit_objective_validations" }, fetchAll)
       .subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
 
-    const valChannel = supabase
-      .channel("validations-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "cockpit_objective_validations" },
-        () => fetchData()
-      )
-      .subscribe();
+  async function fetchAll() {
+    try {
+      const [{ data: objs }, { data: vals }] = await Promise.all([
+        supabase.from("cockpit_objectives").select("*").order("sort_order").order("created_at"),
+        supabase.from("cockpit_objective_validations").select("*"),
+      ]);
+      setObjectives(objs || []);
+      setValidations(vals || []);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    return () => {
-      supabase.removeChannel(objChannel);
-      supabase.removeChannel(valChannel);
-    };
-  }, [fetchData]);
+  function getValidationsFor(objId) {
+    return (validations || []).filter((v) => v.objective_id === objId && v.decision === "approve");
+  }
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    if (!form.title.trim() || !form.number) return;
-    setSubmitting(true);
+  function isLocked(objId) {
+    return getValidationsFor(objId).length >= threshold;
+  }
+
+  function hasValidated(objId) {
+    const name = member?.name || member?.email;
+    return getValidationsFor(objId).some((v) => v.validator_name === name);
+  }
+
+  async function addObjective(pillarId) {
+    if (!newText.trim()) return;
+    const pillarObjs = objectives.filter((o) => o.pillar === pillarId);
+    if (pillarObjs.length >= MAX_PER_PILLAR) return;
 
     const { error } = await supabase.from("cockpit_objectives").insert({
-      number: parseInt(form.number),
-      title: form.title.trim(),
-      description: form.description.trim(),
-      success_criteria: form.success_criteria.trim(),
-      pillar: form.pillar || null,
+      title: newText.trim(),
+      pillar: pillarId,
       status: "proposed",
-      proposed_by: user?.email || "anonymous",
-      sort_order: parseInt(form.number),
+      proposed_by: member?.name || member?.email,
+      sort_order: pillarObjs.length,
+    });
+    if (!error) {
+      await logActivity("created", "objective", { title: newText.trim() });
+      setNewText("");
+      setAddingPillar(null);
+    }
+  }
+
+  async function saveEdit(obj) {
+    if (!editText.trim() || editText.trim() === obj.title) {
+      setEditingId(null);
+      return;
+    }
+    // Update text AND reset all validations (content changed)
+    await supabase.from("cockpit_objectives").update({
+      title: editText.trim(),
+      status: "proposed",
+      proposed_by: member?.name || member?.email,
+    }).eq("id", obj.id);
+
+    // Delete existing validations — content changed, must re-validate
+    await supabase.from("cockpit_objective_validations").delete().eq("objective_id", obj.id);
+
+    await logActivity("updated", "objective", { title: editText.trim() });
+    setEditingId(null);
+    setEditText("");
+  }
+
+  async function validate(obj) {
+    const name = member?.name || member?.email;
+    if (hasValidated(obj.id)) return;
+
+    await supabase.from("cockpit_objective_validations").insert({
+      objective_id: obj.id,
+      validator_name: name,
+      validator_role: member?.role,
+      decision: "approve",
     });
 
-    if (!error) {
-      logActivity(
-        "objective_created",
-        `Objectif #${form.number} cree: ${form.title}`
-      );
-      setForm({ number: "", title: "", description: "", success_criteria: "", pillar: "" });
-      setShowForm(false);
+    // Check if now locked
+    const currentVotes = getValidationsFor(obj.id).length + 1;
+    if (currentVotes >= threshold) {
+      await supabase.from("cockpit_objectives").update({ status: "approved" }).eq("id", obj.id);
+      await logActivity("resolved", "objective", { title: `Locked: ${obj.title}` });
+    } else {
+      await logActivity("updated", "objective", { title: `Voted on: ${obj.title}` });
     }
-    setSubmitting(false);
-  };
+  }
 
-  const handleValidate = async (objectiveId, decision) => {
-    const validatorName = user?.email || "anonymous";
-    const validatorRole = "member";
+  async function deleteObjective(obj) {
+    if (!confirm(`Delete this objective?`)) return;
+    await supabase.from("cockpit_objective_validations").delete().eq("objective_id", obj.id);
+    await supabase.from("cockpit_objectives").delete().eq("id", obj.id);
+    await logActivity("deleted", "objective", { title: obj.title });
+  }
 
-    const { error } = await supabase
-      .from("cockpit_objective_validations")
-      .insert({
-        objective_id: objectiveId,
-        validator_name: validatorName,
-        validator_role: validatorRole,
-        decision,
-        comment: "",
-      });
-
-    if (error) return;
-
-    logActivity(
-      "objective_validated",
-      `Objectif #${objectiveId} ${decision} par ${validatorName}`
-    );
-
-    // Check if we now have enough approvals to auto-approve
-    if (decision === "approve") {
-      const currentApprovals = validations.filter(
-        (v) => v.objective_id === objectiveId && v.decision === "approve"
-      );
-      // +1 for the one we just inserted
-      if (currentApprovals.length + 1 >= REQUIRED_APPROVALS) {
-        await supabase
-          .from("cockpit_objectives")
-          .update({ status: "approved" })
-          .eq("id", objectiveId);
-
-        logActivity(
-          "objective_approved",
-          `Objectif #${objectiveId} approuve avec ${REQUIRED_APPROVALS} validations`
-        );
-      }
-    }
-  };
-
-  const getValidationsForObjective = (objId) =>
-    validations.filter((v) => v.objective_id === objId);
-
-  const getApprovalCount = (objId) =>
-    validations.filter((v) => v.objective_id === objId && v.decision === "approve").length;
-
-  const getPillarInfo = (pillarValue) =>
-    PILLARS.find((p) => p.value === pillarValue) || null;
+  // Stats
+  const totalLocked = objectives.filter((o) => isLocked(o.id)).length;
+  const totalObjectives = objectives.length;
+  const pillarsWithObjective = new Set(objectives.map((o) => o.pillar)).size;
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <PageHeader title="Les 10 Objectifs" />
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500" />
-        </div>
-      </div>
-    );
+    return <div className="p-6 max-w-4xl mx-auto"><p className="text-sm text-[#475569] text-center py-12">Loading objectives...</p></div>;
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Les 10 Objectifs"
-        subtitle="Chaque objectif necessite 2 validations pour etre approuve"
-      />
-
-      {/* Add button */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          style={{ backgroundColor: "#f59e0b", color: "#000" }}
-        >
-          {showForm ? "Annuler" : "+ Nouvel objectif"}
-        </button>
+    <div className="p-6 max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Objectives</h1>
+        <p className="text-sm text-[#94a3b8] mt-1">
+          Define up to 3 objectives per pillar. Each needs {threshold} validations to lock.
+        </p>
+        <div className="flex gap-6 mt-4">
+          <div>
+            <span className="text-3xl font-extrabold text-green-400">{totalLocked}</span>
+            <span className="text-sm text-[#475569] ml-2">locked</span>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-[#64748b]">{totalObjectives}</span>
+            <span className="text-sm text-[#475569] ml-2">total</span>
+          </div>
+          <div>
+            <span className="text-3xl font-extrabold text-blue-400">{pillarsWithObjective}</span>
+            <span className="text-sm text-[#475569] ml-2">/ 7 pillars</span>
+          </div>
+        </div>
+        <div className="h-[2px] mt-4 rounded-full bg-gradient-to-r from-green-500/30 via-blue-500/20 to-transparent" />
       </div>
 
-      {/* Add form */}
-      {showForm && (
-        <Card>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">
-              Proposer un objectif
-            </h3>
+      {/* Pillars */}
+      {PILLARS.map((pillar) => {
+        const pillarObjs = objectives.filter((o) => o.pillar === pillar.id);
+        const canAdd = pillarObjs.length < MAX_PER_PILLAR;
+        const isAdding = addingPillar === pillar.id;
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-zinc-400 mb-1">
-                  Numero
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={form.number}
-                  onChange={(e) => setForm({ ...form, number: e.target.value })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
-                  placeholder="1"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-zinc-400 mb-1">
-                  Pilier
-                </label>
-                <select
-                  value={form.pillar}
-                  onChange={(e) => setForm({ ...form, pillar: e.target.value })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">-- Choisir un pilier --</option>
-                  {PILLARS.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        return (
+          <div key={pillar.id}>
+            {/* Pillar header */}
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pillar.color }} />
+              <h2 className="text-lg font-extrabold text-white">{pillar.label}</h2>
+              <span className="text-xs font-mono text-[#475569]">{pillarObjs.length}/{MAX_PER_PILLAR}</span>
             </div>
+            <p className="text-sm text-[#64748b] mb-4 ml-6">{pillar.desc}</p>
 
-            <div>
-              <label className="block text-sm text-zinc-400 mb-1">Titre</label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
-                placeholder="Titre de l'objectif"
-                required
-              />
-            </div>
+            {/* Objectives */}
+            <div className="space-y-3 ml-6">
+              {pillarObjs.map((obj) => {
+                const votes = getValidationsFor(obj.id);
+                const locked = votes.length >= threshold;
+                const voted = hasValidated(obj.id);
+                const isEditing = editingId === obj.id;
 
-            <div>
-              <label className="block text-sm text-zinc-400 mb-1">
-                Description
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 min-h-[80px]"
-                placeholder="Description detaillee..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-zinc-400 mb-1">
-                Criteres de succes
-              </label>
-              <textarea
-                value={form.success_criteria}
-                onChange={(e) =>
-                  setForm({ ...form, success_criteria: e.target.value })
-                }
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 min-h-[80px]"
-                placeholder="Comment mesurer le succes..."
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                style={{ backgroundColor: "#f59e0b", color: "#000" }}
-              >
-                {submitting ? "Envoi..." : "Proposer"}
-              </button>
-            </div>
-          </form>
-        </Card>
-      )}
-
-      {/* Objectives list */}
-      {objectives.length === 0 ? (
-        <Card>
-          <div className="text-center py-10 space-y-4">
-            <div className="text-5xl">🎯</div>
-            <h3 className="text-xl font-semibold text-white">
-              Aucun objectif defini
-            </h3>
-            <p className="text-zinc-400 max-w-md mx-auto">
-              Commencez par proposer vos 10 objectifs strategiques. Voici des
-              exemples pour vous inspirer :
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-2xl mx-auto mt-4">
-              {EXAMPLE_OBJECTIVES.map((ex, i) => (
-                <div
-                  key={i}
-                  className="text-left text-sm text-zinc-300 bg-zinc-800/50 rounded-lg px-3 py-2"
-                >
-                  <span className="text-amber-500 font-mono font-bold mr-2">
-                    #{i + 1}
-                  </span>
-                  {ex}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {objectives.map((obj) => {
-            const objValidations = getValidationsForObjective(obj.id);
-            const approvalCount = getApprovalCount(obj.id);
-            const rejectCount = objValidations.filter(
-              (v) => v.decision === "reject"
-            ).length;
-            const pillar = getPillarInfo(obj.pillar);
-
-            return (
-              <Card key={obj.id}>
-                <div className="space-y-4">
-                  {/* Header row */}
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <span
-                        className="text-2xl font-bold font-mono shrink-0"
-                        style={{ color: "#f59e0b" }}
-                      >
-                        #{obj.number}
-                      </span>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">
-                          {obj.title}
-                        </h3>
-                        {obj.description && (
-                          <p className="text-sm text-zinc-400 mt-1">
-                            {obj.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {pillar && (
-                        <span className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-800 rounded-full px-2.5 py-1">
-                          <span
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: pillar.color }}
-                          />
-                          {pillar.label}
-                        </span>
-                      )}
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                          STATUS_COLORS[obj.status] || STATUS_COLORS.draft
-                        }`}
-                      >
-                        {obj.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Success criteria */}
-                  {obj.success_criteria && (
-                    <div className="bg-zinc-800/50 rounded-lg p-3">
-                      <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">
-                        Criteres de succes
-                      </p>
-                      <p className="text-sm text-zinc-300">
-                        {obj.success_criteria}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Validation section */}
-                  <div className="border-t border-zinc-800 pt-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-zinc-400">
-                          Validations :{" "}
-                          <span
-                            className={`font-bold ${
-                              approvalCount >= REQUIRED_APPROVALS
-                                ? "text-green-400"
-                                : "text-amber-400"
-                            }`}
+                return (
+                  <div
+                    key={obj.id}
+                    className="rounded-xl border p-5 transition-all"
+                    style={{
+                      borderColor: locked ? "#10b981" + "66" : "#1e293b",
+                      backgroundColor: locked ? "#10b981" + "08" : "#0d1117",
+                    }}
+                  >
+                    {isEditing ? (
+                      <div className="space-y-3">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="w-full bg-transparent text-lg font-bold text-white outline-none resize-none border-b border-[#334155] pb-2"
+                          rows={2}
+                          maxLength={200}
+                          autoFocus
+                          placeholder="Max 2 sentences..."
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => saveEdit(obj)}
+                            className="px-4 py-1.5 text-xs font-bold rounded-lg text-white bg-blue-500"
                           >
-                            {approvalCount}/{REQUIRED_APPROVALS} approuve
-                            {approvalCount > 1 ? "s" : ""}
+                            Save
+                          </button>
+                          <button
+                            onClick={() => { setEditingId(null); setEditText(""); }}
+                            className="px-4 py-1.5 text-xs rounded-lg text-[#64748b] bg-[#1e293b]"
+                          >
+                            Cancel
+                          </button>
+                          <p className="text-[10px] text-amber-400 ml-auto self-center">Saving will reset all validations</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Objective text — large */}
+                        <p className="text-lg font-bold text-white leading-relaxed">
+                          {obj.title}
+                        </p>
+
+                        {/* Meta row */}
+                        <div className="flex items-center gap-3 mt-3 flex-wrap">
+                          {/* Author */}
+                          <span className="text-[10px] text-[#475569] font-mono">
+                            by {obj.proposed_by || "Unknown"}
                           </span>
-                          {rejectCount > 0 && (
-                            <span className="text-red-400 ml-2">
-                              ({rejectCount} rejet{rejectCount > 1 ? "s" : ""})
+
+                          {/* Validation badges */}
+                          <div className="flex items-center gap-1">
+                            {votes.map((v) => (
+                              <span
+                                key={v.id}
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-400/10 text-green-400"
+                              >
+                                {v.validator_name}
+                              </span>
+                            ))}
+                            {Array.from({ length: Math.max(0, threshold - votes.length) }).map((_, i) => (
+                              <span
+                                key={`empty-${i}`}
+                                className="w-5 h-5 rounded-full border border-dashed border-[#334155]"
+                              />
+                            ))}
+                          </div>
+
+                          {/* Lock status */}
+                          {locked ? (
+                            <span className="text-[10px] font-extrabold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Locked
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#475569] font-mono">
+                              {votes.length}/{threshold} to lock
                             </span>
                           )}
-                        </span>
-                      </div>
 
-                      {obj.status !== "approved" &&
-                        obj.status !== "completed" && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleValidate(obj.id, "approve")}
-                              className="px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg text-xs font-medium transition-colors"
-                            >
-                              Approuver
-                            </button>
-                            <button
-                              onClick={() => handleValidate(obj.id, "reject")}
-                              className="px-3 py-1.5 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-xs font-medium transition-colors"
-                            >
-                              Rejeter
-                            </button>
-                          </div>
-                        )}
-                    </div>
-
-                    {/* Validation details */}
-                    {objValidations.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {objValidations.map((v, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center gap-2 text-xs text-zinc-500"
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                v.decision === "approve"
-                                  ? "bg-green-400"
-                                  : v.decision === "reject"
-                                  ? "bg-red-400"
-                                  : "bg-zinc-400"
-                              }`}
-                            />
-                            <span className="text-zinc-300">
-                              {v.validator_name}
-                            </span>
-                            <span>({v.validator_role})</span>
-                            <span>—</span>
-                            <span
-                              className={
-                                v.decision === "approve"
-                                  ? "text-green-400"
-                                  : v.decision === "reject"
-                                  ? "text-red-400"
-                                  : "text-zinc-400"
-                              }
-                            >
-                              {v.decision}
-                            </span>
-                            {v.comment && (
-                              <span className="text-zinc-500 italic">
-                                &quot;{v.comment}&quot;
-                              </span>
+                          {/* Actions — right aligned */}
+                          <div className="flex gap-1 ml-auto">
+                            {!voted && !locked && (
+                              <button
+                                onClick={() => validate(obj)}
+                                className="text-[10px] font-bold px-3 py-1 rounded-lg text-green-400 bg-green-400/10 hover:bg-green-400/20 transition"
+                              >
+                                Validate
+                              </button>
+                            )}
+                            {voted && !locked && (
+                              <span className="text-[10px] text-green-400/60 px-2 py-1">Voted</span>
+                            )}
+                            {canEdit && (
+                              <button
+                                onClick={() => { setEditingId(obj.id); setEditText(obj.title); }}
+                                className="text-[10px] px-2 py-1 rounded text-[#475569] hover:text-white hover:bg-[#1e293b] transition"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {canEdit && !locked && (
+                              <button
+                                onClick={() => deleteObjective(obj)}
+                                className="text-[10px] px-2 py-1 rounded text-red-400/40 hover:text-red-400 transition"
+                              >
+                                Del
+                              </button>
                             )}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      </>
                     )}
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
 
-      {/* Stats footer */}
-      {objectives.length > 0 && (
-        <div className="flex items-center justify-center gap-6 text-sm text-zinc-500 pt-4">
-          <span>
-            {objectives.length} objectif{objectives.length > 1 ? "s" : ""}
-          </span>
-          <span>
-            {objectives.filter((o) => o.status === "approved").length} approuve
-            {objectives.filter((o) => o.status === "approved").length > 1
-              ? "s"
-              : ""}
-          </span>
-          <span>
-            {objectives.filter((o) => o.status === "completed").length} termine
-            {objectives.filter((o) => o.status === "completed").length > 1
-              ? "s"
-              : ""}
-          </span>
-        </div>
-      )}
+              {/* Add objective */}
+              {canAdd && canEdit && (
+                isAdding ? (
+                  <div className="rounded-xl border border-dashed border-[#334155] p-5">
+                    <textarea
+                      value={newText}
+                      onChange={(e) => setNewText(e.target.value)}
+                      className="w-full bg-transparent text-lg font-bold text-white outline-none resize-none placeholder-[#334155]"
+                      rows={2}
+                      maxLength={200}
+                      autoFocus
+                      placeholder="Write your objective (max 2 sentences)..."
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addObjective(pillar.id); }
+                      }}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => addObjective(pillar.id)}
+                        className="px-4 py-1.5 text-xs font-bold rounded-lg text-white"
+                        style={{ backgroundColor: pillar.color }}
+                      >
+                        Add Objective
+                      </button>
+                      <button
+                        onClick={() => { setAddingPillar(null); setNewText(""); }}
+                        className="px-4 py-1.5 text-xs rounded-lg text-[#64748b] bg-[#1e293b]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setAddingPillar(pillar.id)}
+                    className="w-full py-3 rounded-xl border border-dashed border-[#1e293b] text-sm text-[#334155] hover:border-[#475569] hover:text-[#64748b] transition-all"
+                  >
+                    + Add objective ({pillarObjs.length}/{MAX_PER_PILLAR})
+                  </button>
+                )
+              )}
+            </div>
+
+            {/* Separator */}
+            <div className="h-px bg-[#1e293b] mt-6" />
+          </div>
+        );
+      })}
     </div>
   );
 }
