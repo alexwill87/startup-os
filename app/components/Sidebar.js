@@ -21,11 +21,11 @@ const ALL_PILLARS = [
   },
   {
     id: "equipe",
-    label: "People",
+    label: "Team",
     color: "#8b5cf6",
     access: ["admin", "cofounder", "mentor"],
     items: [
-      { href: "/equipe/members", label: "People" },
+      { href: "/equipe/members", label: "Members" },
       { href: "/equipe/agents", label: "Agents" },
       { href: "/equipe/roles", label: "Roles" },
       { href: "/equipe/profile", label: "My Profile" },

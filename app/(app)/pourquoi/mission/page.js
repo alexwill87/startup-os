@@ -44,23 +44,22 @@ export default function VisionPage() {
 
   async function fetchAll() {
     try {
-      const [{ data: visionData }, { data: cmts }] = await Promise.all([
-        supabase.from("cockpit_vision").select("*").eq("topic", "product").order("created_at", { ascending: false }),
-        supabase.from("cockpit_comments").select("*").eq("entity_type", "vision").order("created_at"),
-      ]);
-
+      const { data: visionData } = await supabase.from("cockpit_vision").select("*").eq("topic", "product").order("created_at", { ascending: false });
       const mapped = {};
       SECTIONS.forEach((s) => {
         mapped[s.key] = (visionData || []).find((d) => d.title && d.title.toLowerCase().includes(s.key)) || null;
       });
       setEntries(mapped);
-
-      const grouped = {};
-      (cmts || []).forEach((c) => {
-        if (!grouped[c.entity_id]) grouped[c.entity_id] = [];
-        grouped[c.entity_id].push(c);
-      });
-      setComments(grouped);
+      // Comments may fail if migration 015 not yet applied
+      try {
+        const { data: cmts } = await supabase.from("cockpit_comments").select("*").eq("entity_type", "vision").order("created_at");
+        const grouped = {};
+        (cmts || []).forEach((c) => {
+          if (!grouped[c.entity_id]) grouped[c.entity_id] = [];
+          grouped[c.entity_id].push(c);
+        });
+        setComments(grouped);
+      } catch { setComments({}); }
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
