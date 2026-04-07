@@ -52,6 +52,8 @@ const ALL_PILLARS = [
     access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/projet/features", label: "Features" },
+      { href: "/projet/tasks", label: "Tasks" },
+      { href: "/projet/workflow", label: "Workflow" },
       { href: "/projet/find", label: "Find" },
       { href: "/projet/roadmap", label: "Roadmap" },
       { href: "/projet/docs", label: "Documentation" },
