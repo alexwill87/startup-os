@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase, BUILDERS } from "@/lib/supabase";
-import { useAuth } from "@/lib/AuthProvider";
+import { supabase } from "@/lib/supabase";
+import { useAuth, useMembers } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
 const COLOR = "#3b82f6";
-const BUILDER_LIST = Object.values(BUILDERS);
 
 const SECTIONS = [
   { key: "mission", label: "Mission Statement", placeholder: "What does Radar do and for whom?" },
@@ -18,6 +17,7 @@ const SECTIONS = [
 
 export default function MissionPage() {
   const { user, builder } = useAuth();
+  const members = useMembers();
   const [entries, setEntries] = useState({});
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState("");
@@ -114,7 +114,7 @@ export default function MissionPage() {
           const entry = entries[section.key];
           const isEditing = editing === section.key;
           const authorBuilder = entry
-            ? BUILDER_LIST.find((b) => b.role === entry.builder)
+            ? members.find((m) => m.builder === entry.builder)
             : null;
 
           return (
@@ -129,11 +129,11 @@ export default function MissionPage() {
                   <span
                     className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                     style={{
-                      color: authorBuilder.color,
-                      backgroundColor: authorBuilder.color + "15",
+                      color: authorBuilder.color || "#3b82f6",
+                      backgroundColor: (authorBuilder.color || "#3b82f6") + "15",
                     }}
                   >
-                    {authorBuilder.name}
+                    {authorBuilder.name || authorBuilder.email}
                   </span>
                 )}
               </div>
@@ -209,6 +209,7 @@ export default function MissionPage() {
 }
 
 function AllEntries() {
+  const members = useMembers();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -238,7 +239,7 @@ function AllEntries() {
   return (
     <div className="space-y-3">
       {notes.map((n) => {
-        const b = BUILDER_LIST.find((bl) => bl.role === n.builder);
+        const b = members.find((m) => m.builder === n.builder);
         return (
           <Card key={n.id}>
             <div className="flex items-center gap-2 mb-2">

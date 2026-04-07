@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase, BUILDERS } from "@/lib/supabase";
-import { useAuth } from "@/lib/AuthProvider";
+import { supabase } from "@/lib/supabase";
+import { useAuth, useMembers } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
@@ -102,7 +102,8 @@ export default function RolesPage() {
     }
   }
 
-  const builders = Object.entries(BUILDERS);
+  const members = useMembers();
+  const builders = members.filter((m) => m.builder);
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -113,45 +114,49 @@ export default function RolesPage() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {builders.map(([email, builder]) => {
-          const roleInfo = ROLE_DETAILS[builder.role];
-          const note = notes[builder.role];
-          const isEditing = editingRole === builder.role;
+        {builders.map((member) => {
+          const roleInfo = ROLE_DETAILS[member.builder];
+          const note = notes[member.builder];
+          const isEditing = editingRole === member.builder;
 
           return (
-            <Card key={email}>
+            <Card key={member.id}>
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
-                    style={{ backgroundColor: builder.color }}
+                    style={{ backgroundColor: member.color || "#3b82f6" }}
                   >
-                    {builder.name.charAt(0)}
+                    {(member.name || member.email || "?").charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{builder.name}</h3>
-                    <p className="text-xs text-gray-400">Builder {builder.role}</p>
+                    <h3 className="text-lg font-bold text-white">{member.name || member.email}</h3>
+                    <p className="text-xs text-gray-400">{member.role}{member.builder ? ` (${member.builder})` : ""}</p>
                   </div>
                 </div>
 
                 {/* Role Title */}
-                <div
-                  className="px-3 py-2 rounded-lg text-sm font-semibold"
-                  style={{ backgroundColor: COLOR + "22", color: COLOR }}
-                >
-                  {roleInfo.title}
-                </div>
+                {roleInfo && (
+                  <div
+                    className="px-3 py-2 rounded-lg text-sm font-semibold"
+                    style={{ backgroundColor: COLOR + "22", color: COLOR }}
+                  >
+                    {roleInfo.title}
+                  </div>
+                )}
 
                 {/* Responsibilities */}
-                <ul className="space-y-2">
-                  {roleInfo.responsibilities.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                      <span style={{ color: builder.color }} className="mt-0.5">&#9679;</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {roleInfo && (
+                  <ul className="space-y-2">
+                    {roleInfo.responsibilities.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                        <span style={{ color: member.color || "#3b82f6" }} className="mt-0.5">&#9679;</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* Custom Notes */}
                 <div className="pt-3 border-t border-gray-700">
@@ -162,7 +167,7 @@ export default function RolesPage() {
                     {!isEditing && (
                       <button
                         onClick={() => {
-                          setEditingRole(builder.role);
+                          setEditingRole(member.builder);
                           setEditText(note?.content || "");
                         }}
                         className="text-xs px-2 py-1 rounded text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
@@ -183,7 +188,7 @@ export default function RolesPage() {
                       />
                       <div className="flex gap-2">
                         <button
-                          onClick={() => saveNote(builder.role)}
+                          onClick={() => saveNote(member.builder)}
                           disabled={saving}
                           className="px-3 py-1 text-xs rounded font-semibold text-white transition-colors"
                           style={{ backgroundColor: COLOR }}

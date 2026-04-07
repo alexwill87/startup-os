@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase, BUILDERS } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/activity";
 import { useAuth } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
 const COLOR = "#3b82f6";
-const BUILDER_LIST = Object.values(BUILDERS);
 
 export default function DecisionsPage() {
   const { user, builder } = useAuth();

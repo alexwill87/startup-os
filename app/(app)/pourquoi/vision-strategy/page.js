@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase, BUILDERS } from "@/lib/supabase";
-import { useAuth } from "@/lib/AuthProvider";
+import { supabase } from "@/lib/supabase";
+import { useAuth, useMembers } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
@@ -19,10 +19,10 @@ const TOPICS = [
 
 const TOPIC_MAP = {};
 TOPICS.forEach((t) => (TOPIC_MAP[t.id] = t));
-const BUILDER_LIST = Object.values(BUILDERS);
 
 export default function VisionStrategyPage() {
   const { user, builder } = useAuth();
+  const members = useMembers();
   const [notes, setNotes] = useState([]);
   const [filter, setFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
@@ -205,7 +205,7 @@ export default function VisionStrategyPage() {
         <div className="space-y-4">
           {filtered.map((n) => {
             const topic = TOPIC_MAP[n.topic] || { label: n.topic, color: "#64748b" };
-            const b = BUILDER_LIST.find((bl) => bl.role === n.builder);
+            const b = members.find((m) => m.builder === n.builder);
 
             return (
               <Card

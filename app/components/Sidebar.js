@@ -6,11 +6,12 @@ import { useState } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
-const PILLARS = [
+const ALL_PILLARS = [
   {
     id: "pourquoi",
     label: "Why",
     color: "#3b82f6",
+    access: ["admin", "cofounder", "mentor", "observer"],
     items: [
       { href: "/pourquoi/mission", label: "Mission & Vision" },
       { href: "/pourquoi/vision-strategy", label: "Strategy Notes" },
@@ -21,6 +22,7 @@ const PILLARS = [
     id: "equipe",
     label: "Team",
     color: "#8b5cf6",
+    access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/equipe/members", label: "Members" },
       { href: "/equipe/roles", label: "Roles & Skills" },
@@ -31,6 +33,7 @@ const PILLARS = [
     id: "ressources",
     label: "Resources",
     color: "#10b981",
+    access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/ressources/links", label: "Links & Docs" },
       { href: "/ressources/files", label: "Files" },
@@ -43,6 +46,7 @@ const PILLARS = [
     id: "projet",
     label: "Project",
     color: "#f59e0b",
+    access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/projet/overview", label: "Overview" },
       { href: "/projet/board", label: "Board" },
@@ -55,6 +59,7 @@ const PILLARS = [
     id: "clients",
     label: "Market",
     color: "#ec4899",
+    access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/clients/personas", label: "Personas" },
       { href: "/clients/competitors", label: "Competitors" },
@@ -65,6 +70,7 @@ const PILLARS = [
     id: "finances",
     label: "Finances",
     color: "#ef4444",
+    access: ["admin", "cofounder", "mentor"],
     items: [
       { href: "/finances/budget-track", label: "Budget Tracker" },
       { href: "/finances/costs", label: "Costs" },
@@ -75,6 +81,7 @@ const PILLARS = [
     id: "analytics",
     label: "Analytics",
     color: "#06b6d4",
+    access: ["admin", "cofounder", "mentor", "observer"],
     items: [
       { href: "/analytics/kpis", label: "KPIs" },
       { href: "/analytics/alerts", label: "Alerts" },
@@ -85,6 +92,7 @@ const PILLARS = [
     id: "setup",
     label: "Config",
     color: "#64748b",
+    access: ["admin"],
     items: [
       { href: "/setup/checklist", label: "Checklist" },
       { href: "/setup/config", label: "Project Settings" },
@@ -98,7 +106,9 @@ const PILLARS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { builder } = useAuth();
+  const { builder, member } = useAuth();
+  const userRole = member?.role || "observer";
+  const PILLARS = ALL_PILLARS.filter((p) => p.access.includes(userRole));
   const [collapsed, setCollapsed] = useState(false);
   const [openPillars, setOpenPillars] = useState(() => {
     // Open the pillar that matches current path
@@ -138,56 +148,18 @@ export default function Sidebar() {
 
       {/* Home + Activity */}
       <div className="px-2 pt-3 pb-1 space-y-0.5">
-        <Link
-          href="/"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
-            pathname === "/"
-              ? "bg-[#1e293b] text-white font-semibold"
-              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "H" : "Home"}
-        </Link>
-        <Link
-          href="/activity"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
-            pathname === "/activity"
-              ? "bg-[#1e293b] text-white font-semibold"
-              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "A" : "Activity"}
-        </Link>
-        <Link
-          href="/guide"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
-            pathname === "/guide"
-              ? "bg-[#1e293b] text-white font-semibold"
-              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "?" : "Guide"}
-        </Link>
-        <Link
-          href="/feedback"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
-            pathname === "/feedback"
-              ? "bg-[#1e293b] text-white font-semibold"
-              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "!" : "Feedback"}
-        </Link>
-        <Link
-          href="/leaderboard"
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
-            pathname === "/leaderboard"
-              ? "bg-[#1e293b] text-white font-semibold"
-              : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
-          }`}
-        >
-          {collapsed ? "★" : "Leaderboard"}
-        </Link>
+        <SidebarLink href="/" label="Home" short="H" pathname={pathname} collapsed={collapsed} />
+        {userRole !== "observer" && (
+          <SidebarLink href="/activity" label="Activity" short="A" pathname={pathname} collapsed={collapsed} />
+        )}
+        <SidebarLink href="/guide" label="Guide" short="?" pathname={pathname} collapsed={collapsed} />
+        <SidebarLink href="/feedback" label="Feedback" short="!" pathname={pathname} collapsed={collapsed} />
+        {userRole !== "observer" && (
+          <>
+            <SidebarLink href="/leaderboard" label="Leaderboard" short="*" pathname={pathname} collapsed={collapsed} />
+            <SidebarLink href="/objectives" label="Objectives" short="O" pathname={pathname} collapsed={collapsed} />
+          </>
+        )}
       </div>
 
       {/* Pillars */}
@@ -273,5 +245,21 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+  );
+}
+
+function SidebarLink({ href, label, short, pathname, collapsed }) {
+  const active = pathname === href || pathname.startsWith(href + "/");
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-all ${
+        active
+          ? "bg-[#1e293b] text-white font-semibold"
+          : "text-[#64748b] hover:text-white hover:bg-[#161b22]"
+      }`}
+    >
+      {collapsed ? short : label}
+    </Link>
   );
 }
