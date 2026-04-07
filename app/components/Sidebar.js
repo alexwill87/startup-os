@@ -51,8 +51,7 @@ const ALL_PILLARS = [
     color: "#f59e0b",
     access: ["admin", "cofounder", "mentor"],
     items: [
-      { href: "/projet/overview", label: "Overview" },
-      { href: "/projet/board", label: "Board" },
+      { href: "/projet/features", label: "Features" },
       { href: "/projet/roadmap", label: "Roadmap" },
       { href: "/projet/docs", label: "Documentation" },
       { href: "/projet/retro", label: "Retrospective" },

@@ -140,7 +140,7 @@ export default function HomeDashboard() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold text-[#64748b] uppercase tracking-wider">My Tasks This Sprint</h2>
-                <Link href="/projet/board" className="text-xs text-blue-400 hover:underline">View Board</Link>
+                <Link href="/projet/features" className="text-xs text-blue-400 hover:underline">View Board</Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {mySprintTasks.slice(0, 6).map((t) => (
@@ -167,7 +167,7 @@ export default function HomeDashboard() {
                   <p className="text-sm font-bold text-red-400">{tasksBlocked} blocked task{tasksBlocked > 1 ? "s" : ""}</p>
                   <p className="text-xs text-[#475569]">Resolve blockers to keep the sprint on track</p>
                 </div>
-                <Link href="/projet/board" className="ml-auto text-xs text-red-400 hover:underline">Fix now</Link>
+                <Link href="/projet/features" className="ml-auto text-xs text-red-400 hover:underline">Fix now</Link>
               </div>
             </Card>
           )}
@@ -359,7 +359,7 @@ export default function HomeDashboard() {
       {/* Quick actions — admin/cofounder */}
       {canEdit && (
         <div className="flex gap-3 flex-wrap pt-2">
-          <QuickLink href="/projet/board" label="Board" />
+          <QuickLink href="/projet/features" label="Board" />
           <QuickLink href="/setup/checklist" label="Checklist" />
           <QuickLink href="/pourquoi/decisions" label="Decisions" />
           <QuickLink href="/objectives" label="Objectives" />

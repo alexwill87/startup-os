@@ -33,7 +33,7 @@ const ONBOARDING = {
       { label: "Define the Vision", href: "/pourquoi/mission", desc: "Write the mission, vision, and north star metric" },
       { label: "Set Goals", href: "/objectives", desc: "Define up to 3 goals per pillar" },
       { label: "Review the checklist", href: "/setup/checklist", desc: "76 items across 7 pillars — the source of truth" },
-      { label: "Create first tasks", href: "/projet/board", desc: "Add tasks to the kanban board for Sprint 1" },
+      { label: "Create first tasks", href: "/projet/features", desc: "Add tasks to the kanban board for Sprint 1" },
     ],
   },
   cofounder: {
@@ -43,7 +43,7 @@ const ONBOARDING = {
       { label: "Set up your profile", href: "/equipe/profile", desc: "Fill in your bio, skills, and contact info" },
       { label: "Read the Vision", href: "/pourquoi/mission", desc: "Understand the mission and where we're going" },
       { label: "Define Goals", href: "/objectives", desc: "Propose and validate goals for your pillars" },
-      { label: "Check the Board", href: "/projet/board", desc: "See what tasks are assigned to you this sprint" },
+      { label: "Check the Board", href: "/projet/features", desc: "See what tasks are assigned to you this sprint" },
       { label: "Join decisions", href: "/pourquoi/decisions", desc: "Vote on open decisions" },
       { label: "Connect on Telegram", href: "/setup/bot", desc: "Send /start to @RadarPMBot to get notifications" },
     ],
