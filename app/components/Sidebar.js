@@ -9,24 +9,27 @@ import { supabase } from "@/lib/supabase";
 const ALL_PILLARS = [
   {
     id: "pourquoi",
-    label: "Why",
+    label: "Purpose",
     color: "#3b82f6",
     access: ["admin", "cofounder", "mentor", "observer"],
     items: [
-      { href: "/pourquoi/mission", label: "Mission & Vision" },
+      { href: "/pourquoi/mission", label: "Vision" },
+      { href: "/objectives", label: "Objectives" },
       { href: "/pourquoi/vision-strategy", label: "Strategy Notes" },
       { href: "/pourquoi/decisions", label: "Decisions" },
     ],
   },
   {
     id: "equipe",
-    label: "Team",
+    label: "People",
     color: "#8b5cf6",
     access: ["admin", "cofounder", "mentor"],
     items: [
-      { href: "/equipe/members", label: "Members" },
-      { href: "/equipe/roles", label: "Roles & Skills" },
+      { href: "/equipe/members", label: "People" },
+      { href: "/equipe/agents", label: "Agents" },
+      { href: "/equipe/roles", label: "Roles" },
       { href: "/equipe/profile", label: "My Profile" },
+      { href: "/equipe/onboarding", label: "Onboarding" },
     ],
   },
   {
@@ -44,7 +47,7 @@ const ALL_PILLARS = [
   },
   {
     id: "projet",
-    label: "Project",
+    label: "Product",
     color: "#f59e0b",
     access: ["admin", "cofounder", "mentor"],
     items: [
@@ -53,6 +56,7 @@ const ALL_PILLARS = [
       { href: "/projet/roadmap", label: "Roadmap" },
       { href: "/projet/docs", label: "Documentation" },
       { href: "/projet/retro", label: "Retrospective" },
+      { href: "/feedback", label: "Feedback" },
     ],
   },
   {
@@ -98,8 +102,9 @@ const ALL_PILLARS = [
       { href: "/setup/config", label: "Project Settings" },
       { href: "/setup/api-keys", label: "API Keys" },
       { href: "/setup/bot", label: "Bot" },
-      { href: "/setup/roadmap-os", label: "Product Roadmap" },
+      { href: "/setup/roadmap-os", label: "Feature Roadmap" },
       { href: "/setup/changelog", label: "Changelog" },
+      { href: "/guide", label: "Guide" },
     ],
   },
 ];
@@ -150,14 +155,9 @@ export default function Sidebar() {
       <div className="px-2 pt-3 pb-1 space-y-0.5">
         <SidebarLink href="/" label="Home" short="H" pathname={pathname} collapsed={collapsed} />
         {userRole !== "observer" && (
-          <SidebarLink href="/activity" label="Activity" short="A" pathname={pathname} collapsed={collapsed} />
-        )}
-        <SidebarLink href="/guide" label="Guide" short="?" pathname={pathname} collapsed={collapsed} />
-        <SidebarLink href="/feedback" label="Feedback" short="!" pathname={pathname} collapsed={collapsed} />
-        {userRole !== "observer" && (
           <>
+            <SidebarLink href="/activity" label="Activity" short="A" pathname={pathname} collapsed={collapsed} />
             <SidebarLink href="/leaderboard" label="Leaderboard" short="*" pathname={pathname} collapsed={collapsed} />
-            <SidebarLink href="/objectives" label="Objectives" short="O" pathname={pathname} collapsed={collapsed} />
           </>
         )}
       </div>

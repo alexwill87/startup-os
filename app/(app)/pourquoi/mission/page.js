@@ -92,7 +92,7 @@ export default function MissionPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <PageHeader
-        title="Mission & Vision"
+        title="Vision"
         subtitle="Define why Radar exists and where it's going"
         color={COLOR}
       />

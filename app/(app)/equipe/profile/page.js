@@ -7,290 +7,294 @@ import Card from "@/app/components/Card";
 import PageHeader from "@/app/components/PageHeader";
 
 const COLOR = "#8b5cf6";
-
 const LANGUAGE_OPTIONS = ["English", "French", "Spanish", "German", "Arabic", "Portuguese", "Chinese", "Japanese", "Korean", "Russian", "Italian", "Dutch", "Hindi"];
 const TIMEZONE_OPTIONS = ["UTC", "Europe/Paris", "Europe/London", "Europe/Berlin", "America/New_York", "America/Los_Angeles", "Asia/Tokyo", "Asia/Shanghai", "Africa/Lagos", "Africa/Casablanca"];
 
 export default function ProfilePage() {
-  const { user, member } = useAuth();
+  const { member } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [newUrl, setNewUrl] = useState({ label: "", url: "" });
-  const [newSkill, setNewSkill] = useState("");
-  const [newLang, setNewLang] = useState("");
 
   useEffect(() => {
-    if (member?.id) {
-      fetchProfile();
-    }
+    if (member?.id) fetchProfile();
   }, [member]);
 
   async function fetchProfile() {
-    const { data } = await supabase
-      .from("cockpit_members")
-      .select("*")
-      .eq("id", member.id)
-      .single();
-    if (data) setProfile(data);
+    const { data } = await supabase.from("cockpit_members").select("*").eq("id", member.id).single();
+    if (data) { setProfile(data); setDraft(data); }
   }
 
-  async function saveField(field, value) {
+  async function save() {
     setSaving(true);
-    setSaved(false);
-    await supabase
-      .from("cockpit_members")
-      .update({ [field]: value })
-      .eq("id", member.id);
-    setProfile((p) => ({ ...p, [field]: value }));
+    await supabase.from("cockpit_members").update({
+      name: draft.name, bio: draft.bio, phone: draft.phone, linkedin: draft.linkedin,
+      telegram_chat_id: draft.telegram_chat_id, skills: draft.skills, languages: draft.languages,
+      timezone: draft.timezone, availability: draft.availability, urls: draft.urls,
+    }).eq("id", member.id);
+    setProfile(draft);
+    setEditing(false);
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   }
 
-  async function addUrl() {
-    if (!newUrl.label || !newUrl.url) return;
-    const urls = [...(profile.urls || []), newUrl];
-    await saveField("urls", urls);
-    setNewUrl({ label: "", url: "" });
-  }
+  function cancel() { setDraft(profile); setEditing(false); }
+  function updateDraft(field, value) { setDraft((d) => ({ ...d, [field]: value })); }
 
-  async function removeUrl(index) {
-    const urls = (profile.urls || []).filter((_, i) => i !== index);
-    await saveField("urls", urls);
-  }
-
-  async function addSkill() {
-    if (!newSkill.trim()) return;
-    const skills = [...(profile.skills || []), newSkill.trim()];
-    await saveField("skills", skills);
-    setNewSkill("");
-  }
-
-  async function removeSkill(index) {
-    const skills = (profile.skills || []).filter((_, i) => i !== index);
-    await saveField("skills", skills);
-  }
-
-  async function addLanguage() {
-    if (!newLang) return;
-    const languages = [...(profile.languages || []), newLang];
-    await saveField("languages", languages);
-    setNewLang("");
-  }
-
-  async function removeLanguage(index) {
-    const languages = (profile.languages || []).filter((_, i) => i !== index);
-    await saveField("languages", languages);
-  }
-
-  if (!profile) {
-    return <div className="text-[#475569] text-sm font-mono p-8">Loading profile...</div>;
-  }
+  if (!profile) return <div className="text-[#475569] text-sm font-mono p-8">Loading profile...</div>;
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="My Profile" subtitle="Edit your information — visible to your team" color={COLOR}>
-        {saved && <span className="text-emerald-400 text-xs font-mono">Saved</span>}
-        {saving && <span className="text-[#475569] text-xs font-mono">Saving...</span>}
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
+      <PageHeader title="My Profile" subtitle="Your information — visible to the team" color={COLOR}>
+        {!editing ? (
+          <button onClick={() => setEditing(true)} className="px-4 py-2 text-xs font-bold rounded-lg text-white bg-purple-500 hover:bg-purple-600 transition">
+            Edit Profile
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <button onClick={save} disabled={saving} className="px-4 py-2 text-xs font-bold rounded-lg text-white bg-green-500 hover:bg-green-600 transition">
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button onClick={cancel} className="px-4 py-2 text-xs rounded-lg text-[#64748b] bg-[#1e293b]">Cancel</button>
+          </div>
+        )}
       </PageHeader>
 
-      {/* Identity */}
-      <Card>
-        <h3 className="text-sm font-bold text-white mb-4">Identity</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Name" value={profile.name || ""} onChange={(v) => saveField("name", v)} />
-          <Field label="Email" value={profile.email} readonly />
-          <Field label="Role" value={profile.role} readonly />
-          <Field label="Builder" value={profile.builder || ""} readonly />
-          <Field label="Bio" value={profile.bio || ""} onChange={(v) => saveField("bio", v)} multiline />
-        </div>
-      </Card>
-
-      {/* Contact */}
-      <Card>
-        <h3 className="text-sm font-bold text-white mb-4">Contact</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Phone" value={profile.phone || ""} onChange={(v) => saveField("phone", v)} placeholder="+33 6 12 34 56 78" />
-          <Field label="LinkedIn" value={profile.linkedin || ""} onChange={(v) => saveField("linkedin", v)} placeholder="https://linkedin.com/in/..." />
-          <Field label="Telegram Chat ID" value={profile.telegram_chat_id || ""} onChange={(v) => saveField("telegram_chat_id", v)} placeholder="Your Telegram chat ID (from @RadarPMBot /start)" />
-        </div>
-      </Card>
-
-      {/* URLs */}
-      <Card>
-        <h3 className="text-sm font-bold text-white mb-4">Links & URLs</h3>
-        {(profile.urls || []).length > 0 && (
-          <div className="space-y-2 mb-4">
-            {(profile.urls || []).map((u, i) => (
-              <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b]">
-                <span className="text-xs font-bold text-[#94a3b8] min-w-[80px]">{u.label}</span>
-                <a href={u.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate flex-1">
-                  {u.url}
-                </a>
-                <button onClick={() => removeUrl(i)} className="text-[10px] text-red-400 hover:text-red-300">remove</button>
+      {/* === READ MODE === */}
+      {!editing ? (
+        <div className="space-y-6">
+          {/* Header card */}
+          <Card>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-extrabold text-white" style={{ backgroundColor: profile.color || "#3b82f6" }}>
+                {(profile.name || profile.email || "?").charAt(0)}
               </div>
-            ))}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Label (e.g. GitHub, Portfolio)"
-            value={newUrl.label}
-            onChange={(e) => setNewUrl({ ...newUrl, label: e.target.value })}
-            className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none focus:border-[#3b82f6]"
-          />
-          <input
-            type="url"
-            placeholder="https://..."
-            value={newUrl.url}
-            onChange={(e) => setNewUrl({ ...newUrl, url: e.target.value })}
-            className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none focus:border-[#3b82f6]"
-          />
-          <button onClick={addUrl} className="px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-mono hover:bg-blue-500/20 transition-colors">
-            Add
-          </button>
-        </div>
-      </Card>
-
-      {/* Skills */}
-      <Card>
-        <h3 className="text-sm font-bold text-white mb-4">Skills</h3>
-        {(profile.skills || []).length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {(profile.skills || []).map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1e293b] text-xs text-[#94a3b8]">
-                {s}
-                <button onClick={() => removeSkill(i)} className="text-[#475569] hover:text-red-400">&times;</button>
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Add a skill (e.g. React, Python, Design)"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addSkill()}
-            className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none focus:border-[#3b82f6]"
-          />
-          <button onClick={addSkill} className="px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-mono hover:bg-blue-500/20 transition-colors">
-            Add
-          </button>
-        </div>
-      </Card>
-
-      {/* Availability */}
-      <Card>
-        <h3 className="text-sm font-bold text-white mb-4">Availability & Preferences</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[11px] text-[#64748b] font-mono mb-1.5">Timezone</label>
-            <select
-              value={profile.timezone || ""}
-              onChange={(e) => saveField("timezone", e.target.value)}
-              className="w-full py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none focus:border-[#3b82f6]"
-            >
-              <option value="">Select timezone</option>
-              {TIMEZONE_OPTIONS.map((tz) => (
-                <option key={tz} value={tz}>{tz}</option>
-              ))}
-            </select>
-          </div>
-          <Field label="Working hours" value={profile.availability || ""} onChange={(v) => saveField("availability", v)} placeholder="e.g. Mon-Fri 9h-18h, Sundays for hackathon" />
-        </div>
-
-        {/* Languages */}
-        <div className="mt-4">
-          <label className="block text-[11px] text-[#64748b] font-mono mb-1.5">Languages</label>
-          {(profile.languages || []).length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {(profile.languages || []).map((l, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1e293b] text-xs text-[#94a3b8]">
-                  {l}
-                  <button onClick={() => removeLanguage(i)} className="text-[#475569] hover:text-red-400">&times;</button>
-                </span>
-              ))}
+              <div>
+                <h2 className="text-xl font-extrabold text-white">{profile.name || profile.email}</h2>
+                <p className="text-sm text-[#64748b]">{profile.role}{profile.builder ? ` — Builder ${profile.builder}` : ""}</p>
+                <p className="text-xs text-[#475569] font-mono">{profile.email}</p>
+              </div>
             </div>
+            {profile.bio && <p className="text-sm text-[#94a3b8] mt-4 leading-relaxed">{profile.bio}</p>}
+          </Card>
+
+          {/* Contact */}
+          {(profile.phone || profile.linkedin || profile.telegram_chat_id) && (
+            <Card>
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Contact</h3>
+              <div className="space-y-2">
+                {profile.phone && <InfoRow label="Phone" value={profile.phone} />}
+                {profile.linkedin && <InfoRow label="LinkedIn" value={profile.linkedin} link />}
+                {profile.telegram_chat_id && <InfoRow label="Telegram ID" value={profile.telegram_chat_id} />}
+              </div>
+            </Card>
           )}
-          <div className="flex gap-2">
-            <select
-              value={newLang}
-              onChange={(e) => setNewLang(e.target.value)}
-              className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none"
-            >
-              <option value="">Select language</option>
-              {LANGUAGE_OPTIONS.filter((l) => !(profile.languages || []).includes(l)).map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-            <button onClick={addLanguage} className="px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-mono hover:bg-blue-500/20 transition-colors">
-              Add
-            </button>
-          </div>
+
+          {/* Skills */}
+          {(profile.skills || []).length > 0 && (
+            <Card>
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((s, i) => (
+                  <span key={i} className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold">{s}</span>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Languages & Timezone */}
+          {((profile.languages || []).length > 0 || profile.timezone) && (
+            <Card>
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Availability</h3>
+              <div className="space-y-2">
+                {profile.timezone && <InfoRow label="Timezone" value={profile.timezone} />}
+                {profile.availability && <InfoRow label="Hours" value={profile.availability} />}
+                {(profile.languages || []).length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#475569] w-20 shrink-0">Languages</span>
+                    <div className="flex gap-1 flex-wrap">
+                      {profile.languages.map((l, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-[#1e293b] text-[#94a3b8] text-xs">{l}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* URLs */}
+          {(profile.urls || []).length > 0 && (
+            <Card>
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Links</h3>
+              <div className="space-y-2">
+                {profile.urls.map((u, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-xs text-[#475569] w-20 shrink-0">{u.label}</span>
+                    <a href={u.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate">{u.url}</a>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Empty state */}
+          {!profile.bio && (profile.skills || []).length === 0 && !profile.phone && (
+            <Card className="border-dashed border-[#334155]">
+              <p className="text-sm text-[#475569] text-center py-6">
+                Your profile is empty. Click "Edit Profile" to fill it in!
+              </p>
+            </Card>
+          )}
         </div>
-      </Card>
+      ) : (
+        /* === EDIT MODE === */
+        <div className="space-y-6">
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Identity</h3>
+            <div className="space-y-3">
+              <EditField label="Name" value={draft.name || ""} onChange={(v) => updateDraft("name", v)} />
+              <EditField label="Bio" value={draft.bio || ""} onChange={(v) => updateDraft("bio", v)} multiline placeholder="A short bio about yourself..." />
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Contact</h3>
+            <div className="space-y-3">
+              <EditField label="Phone" value={draft.phone || ""} onChange={(v) => updateDraft("phone", v)} placeholder="+33 6 12 34 56 78" />
+              <EditField label="LinkedIn" value={draft.linkedin || ""} onChange={(v) => updateDraft("linkedin", v)} placeholder="https://linkedin.com/in/..." />
+              <EditField label="Telegram Chat ID" value={draft.telegram_chat_id || ""} onChange={(v) => updateDraft("telegram_chat_id", v)} placeholder="From @RadarPMBot /start" />
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Skills</h3>
+            <TagEditor tags={draft.skills || []} onChange={(v) => updateDraft("skills", v)} placeholder="Add skill..." />
+          </Card>
+
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Availability</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] text-[#475569] font-mono mb-1">Timezone</label>
+                <select value={draft.timezone || ""} onChange={(e) => updateDraft("timezone", e.target.value)} className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none">
+                  <option value="">Select</option>
+                  {TIMEZONE_OPTIONS.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
+                </select>
+              </div>
+              <EditField label="Working hours" value={draft.availability || ""} onChange={(v) => updateDraft("availability", v)} placeholder="e.g. Mon-Fri 9h-18h" />
+              <div>
+                <label className="block text-[11px] text-[#475569] font-mono mb-1">Languages</label>
+                <TagEditor tags={draft.languages || []} onChange={(v) => updateDraft("languages", v)} options={LANGUAGE_OPTIONS} />
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Links</h3>
+            <UrlEditor urls={draft.urls || []} onChange={(v) => updateDraft("urls", v)} />
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
 
-// Reusable inline-editable field
-function Field({ label, value, onChange, readonly, multiline, placeholder }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
+function InfoRow({ label, value, link }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-[#475569] w-20 shrink-0">{label}</span>
+      {link ? (
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate">{value}</a>
+      ) : (
+        <span className="text-xs text-[#e2e8f0] font-mono">{value}</span>
+      )}
+    </div>
+  );
+}
 
-  useEffect(() => { setDraft(value); }, [value]);
+function EditField({ label, value, onChange, multiline, placeholder }) {
+  const cls = "w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm outline-none focus:border-purple-500";
+  return (
+    <div>
+      <label className="block text-[11px] text-[#475569] font-mono mb-1">{label}</label>
+      {multiline ? (
+        <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className={cls + " resize-none"} placeholder={placeholder} />
+      ) : (
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={cls} placeholder={placeholder} />
+      )}
+    </div>
+  );
+}
 
-  function save() {
-    if (onChange && draft !== value) onChange(draft);
-    setEditing(false);
+function TagEditor({ tags, onChange, placeholder, options }) {
+  const [input, setInput] = useState("");
+
+  function add(val) {
+    const v = val || input.trim();
+    if (!v || tags.includes(v)) return;
+    onChange([...tags, v]);
+    setInput("");
   }
 
-  const inputClass = "w-full py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs font-mono outline-none focus:border-[#3b82f6]";
+  function remove(i) { onChange(tags.filter((_, idx) => idx !== i)); }
 
   return (
     <div>
-      <label className="block text-[11px] text-[#64748b] font-mono mb-1.5">{label}</label>
-      {readonly ? (
-        <div className="py-2.5 px-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b] text-xs text-[#64748b] font-mono">
-          {value || "—"}
-        </div>
-      ) : editing ? (
-        <div className="flex gap-2">
-          {multiline ? (
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              rows={3}
-              autoFocus
-              onBlur={save}
-              className={inputClass + " flex-1"}
-              placeholder={placeholder}
-            />
-          ) : (
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={save}
-              onKeyDown={(e) => e.key === "Enter" && save()}
-              autoFocus
-              className={inputClass + " flex-1"}
-              placeholder={placeholder}
-            />
-          )}
-        </div>
-      ) : (
-        <div
-          onClick={() => setEditing(true)}
-          className="py-2.5 px-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b] text-xs font-mono cursor-pointer hover:border-[#334155] transition-colors min-h-[38px]"
-          style={{ color: value ? "#e2e8f0" : "#475569" }}
-        >
-          {value || placeholder || "Click to edit..."}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {tags.map((t, i) => (
+            <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1e293b] text-xs text-[#94a3b8]">
+              {t}
+              <button onClick={() => remove(i)} className="text-[#475569] hover:text-red-400">&times;</button>
+            </span>
+          ))}
         </div>
       )}
+      <div className="flex gap-2">
+        {options ? (
+          <select value="" onChange={(e) => { if (e.target.value) add(e.target.value); }} className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none">
+            <option value="">Select...</option>
+            {options.filter((o) => !tags.includes(o)).map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        ) : (
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" placeholder={placeholder} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function UrlEditor({ urls, onChange }) {
+  const [label, setLabel] = useState("");
+  const [url, setUrl] = useState("");
+
+  function add() {
+    if (!label || !url) return;
+    onChange([...urls, { label, url }]);
+    setLabel(""); setUrl("");
+  }
+
+  function remove(i) { onChange(urls.filter((_, idx) => idx !== i)); }
+
+  return (
+    <div>
+      {urls.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {urls.map((u, i) => (
+            <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b]">
+              <span className="text-xs font-bold text-[#94a3b8] w-20">{u.label}</span>
+              <span className="text-xs text-blue-400 truncate flex-1">{u.url}</span>
+              <button onClick={() => remove(i)} className="text-[10px] text-red-400/50 hover:text-red-400">&times;</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <input type="text" placeholder="Label" value={label} onChange={(e) => setLabel(e.target.value)} className="w-28 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" />
+        <input type="url" placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" onKeyDown={(e) => e.key === "Enter" && add()} />
+        <button onClick={add} className="px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs hover:bg-blue-500/20">Add</button>
+      </div>
     </div>
   );
 }
