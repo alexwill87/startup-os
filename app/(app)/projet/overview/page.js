@@ -25,6 +25,7 @@ export default function ProductOverview() {
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [suggesting, setSuggesting] = useState({});
 
   const activeMembers = members.filter((m) => m.status === "active" && m.role !== "observer");
   const threshold = Math.max(2, Math.ceil(activeMembers.length * 0.66));
@@ -73,12 +74,57 @@ export default function ProductOverview() {
     return supabase.from("cockpit_vision").update({ body: JSON.stringify(meta) }).eq("id", item.id);
   }
 
+  async function aiSuggest(field) {
+    if (!form.title.trim()) return;
+    setSuggesting((s) => ({ ...s, [field]: true }));
+    try {
+      const goalsContext = goals.map((g) => `[${g.pillar}] ${g.title}`).join("; ");
+      const prompts = {
+        description: `Given a product feature titled "${form.title}" for a startup called Radar (job platform monitoring with AI alerts and tailored CVs), write a concise 1-2 sentence description of what this feature does and why it matters. Goals: ${goalsContext}. Answer in English, no quotes.`,
+        prompt: `Write a technical prompt/instruction for an AI coding agent to implement a feature titled "${form.title}" for a Next.js + Supabase + Tailwind app. Description: ${form.description || "not yet defined"}. Be specific about what to build, which tables/components to touch. Max 200 words.`,
+        goal_id: `Given these goals: ${goals.map((g) => `${g.id}:${g.title}`).join("; ")}. Which goal is most relevant to the feature "${form.title}"? Return ONLY the goal ID (uuid), nothing else. If none match, return empty.`,
+        checklist: `Break down the feature "${form.title}" (${form.description || ""}) into 3-6 small implementation tasks. Return as JSON array of strings. Example: ["Create the database table","Build the API endpoint","Add the UI component"]. Only the JSON array, nothing else.`,
+      };
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: prompts[field], history: [], userId: member?.email, page: "/projet/overview" }),
+      });
+      const data = await res.json();
+      const reply = (data.reply || "").trim();
+      if (field === "goal_id") {
+        const match = goals.find((g) => reply.includes(g.id));
+        if (match) setForm((f) => ({ ...f, goal_id: match.id }));
+      } else if (field === "checklist") {
+        try {
+          const tasks = JSON.parse(reply);
+          if (Array.isArray(tasks)) setForm((f) => ({ ...f, _checklist: tasks }));
+        } catch { /* ignore parse errors */ }
+      } else {
+        setForm((f) => ({ ...f, [field]: reply }));
+      }
+    } catch (err) {
+      console.error("AI suggest error:", err);
+    } finally {
+      setSuggesting((s) => ({ ...s, [field]: false }));
+    }
+  }
+
+  async function aiSuggestAll() {
+    if (!form.title.trim()) return;
+    await aiSuggest("description");
+    await aiSuggest("prompt");
+    await aiSuggest("goal_id");
+    await aiSuggest("checklist");
+  }
+
   async function addFeature(e) {
     e.preventDefault();
     if (!form.title.trim()) return;
+    const initialChecklist = (form._checklist || []).map((t) => ({ text: t, done: false }));
     const body = JSON.stringify({
       phase: "proposed", description: form.description.trim(), prompt: form.prompt.trim(),
-      votes: [], ready: false, goal_id: form.goal_id, assigned_to: form.assigned_to, checklist: [],
+      votes: [], ready: false, goal_id: form.goal_id, assigned_to: form.assigned_to, checklist: initialChecklist,
     });
     await supabase.from("cockpit_vision").insert({ topic: "roadmap", title: form.title.trim(), body, builder: member?.builder, created_by: member?.user_id });
     await logActivity("created", "feature", { title: form.title.trim() });
@@ -145,25 +191,99 @@ export default function ProductOverview() {
       {/* Form */}
       {showForm && (
         <Card>
-          <form onSubmit={addFeature} className="space-y-3">
-            <input type="text" placeholder="Feature title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm outline-none focus:border-amber-500" required />
-            <textarea placeholder="Description — what does this feature do?" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2}
-              className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none resize-none" />
-            <textarea placeholder="Prompt — the AI instruction to build this feature" value={form.prompt} onChange={(e) => setForm({ ...form, prompt: e.target.value })} rows={3}
-              className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-amber-300 text-xs font-mono outline-none resize-none" />
-            <div className="flex gap-3">
-              <select value={form.goal_id} onChange={(e) => setForm({ ...form, goal_id: e.target.value })}
-                className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none">
-                <option value="">Link to a Goal (optional)</option>
-                {goals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
-              </select>
-              <input type="text" placeholder="Assigned to" value={form.assigned_to} onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
-                className="w-40 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" />
+          <form onSubmit={addFeature} className="space-y-4">
+            {/* Title */}
+            <div>
+              <label className="block text-[10px] text-[#475569] font-bold uppercase mb-1">Title</label>
+              <input type="text" placeholder="Feature title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+                className="w-full py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm outline-none focus:border-amber-500" required />
             </div>
-            <div className="flex gap-2">
-              <button type="submit" className="px-4 py-2 text-xs font-bold rounded-lg text-white bg-amber-500">Add Feature</button>
-              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-xs rounded-lg text-[#64748b] bg-[#1e293b]">Cancel</button>
+
+            {/* AI Fill All button */}
+            {form.title.trim() && (
+              <button type="button" onClick={aiSuggestAll} disabled={Object.values(suggesting).some(Boolean)}
+                className="w-full py-2 text-xs font-bold rounded-lg text-purple-400 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition disabled:opacity-50">
+                {Object.values(suggesting).some(Boolean) ? "AI is thinking..." : "AI — Fill all fields from title"}
+              </button>
+            )}
+
+            {/* Description */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-[#475569] font-bold uppercase">Description</label>
+                {form.title.trim() && (
+                  <button type="button" onClick={() => aiSuggest("description")} disabled={suggesting.description}
+                    className="text-[10px] font-bold text-purple-400 hover:text-purple-300 disabled:opacity-50">
+                    {suggesting.description ? "..." : "AI suggest"}
+                  </button>
+                )}
+              </div>
+              <textarea placeholder="What does this feature do and why?" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2}
+                className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none resize-none" />
+            </div>
+
+            {/* Prompt */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-[#475569] font-bold uppercase">Prompt (AI instruction)</label>
+                {form.title.trim() && (
+                  <button type="button" onClick={() => aiSuggest("prompt")} disabled={suggesting.prompt}
+                    className="text-[10px] font-bold text-purple-400 hover:text-purple-300 disabled:opacity-50">
+                    {suggesting.prompt ? "..." : "AI suggest"}
+                  </button>
+                )}
+              </div>
+              <textarea placeholder="Technical instruction for an agent to build this" value={form.prompt} onChange={(e) => setForm({ ...form, prompt: e.target.value })} rows={3}
+                className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-amber-300 text-xs font-mono outline-none resize-none" />
+            </div>
+
+            {/* Goal + Assigned */}
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] text-[#475569] font-bold uppercase">Linked Goal</label>
+                  {form.title.trim() && (
+                    <button type="button" onClick={() => aiSuggest("goal_id")} disabled={suggesting.goal_id}
+                      className="text-[10px] font-bold text-purple-400 hover:text-purple-300 disabled:opacity-50">
+                      {suggesting.goal_id ? "..." : "AI match"}
+                    </button>
+                  )}
+                </div>
+                <select value={form.goal_id} onChange={(e) => setForm({ ...form, goal_id: e.target.value })}
+                  className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none">
+                  <option value="">None</option>
+                  {goals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
+                </select>
+              </div>
+              <div className="w-40">
+                <label className="block text-[10px] text-[#475569] font-bold uppercase mb-1">Assigned to</label>
+                <input type="text" placeholder="Person or agent" value={form.assigned_to} onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
+                  className="w-full py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" />
+              </div>
+            </div>
+
+            {/* AI-suggested checklist preview */}
+            {(form._checklist || []).length > 0 && (
+              <div>
+                <label className="block text-[10px] text-[#475569] font-bold uppercase mb-1">Suggested Tasks</label>
+                <div className="space-y-1 p-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b]">
+                  {form._checklist.map((task, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-[10px] text-amber-400">-</span>
+                      <span className="text-xs text-[#e2e8f0]">{task}</span>
+                      <button type="button" onClick={() => setForm((f) => ({ ...f, _checklist: f._checklist.filter((_, idx) => idx !== i) }))}
+                        className="text-[10px] text-red-400/40 hover:text-red-400 ml-auto">&times;</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Submit */}
+            <div className="flex gap-2 pt-2 border-t border-[#1e293b]">
+              <button type="submit" className="px-5 py-2.5 text-xs font-bold rounded-lg text-white bg-amber-500 hover:bg-amber-600 transition">Add Feature</button>
+              <button type="button" onClick={() => { setShowForm(false); setForm({ title: "", description: "", prompt: "", goal_id: "", assigned_to: "" }); }}
+                className="px-4 py-2.5 text-xs rounded-lg text-[#64748b] bg-[#1e293b]">Cancel</button>
             </div>
           </form>
         </Card>
