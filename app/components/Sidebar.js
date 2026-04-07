@@ -14,7 +14,7 @@ const ALL_PILLARS = [
     access: ["admin", "cofounder", "mentor", "observer"],
     items: [
       { href: "/pourquoi/mission", label: "Vision" },
-      { href: "/objectives", label: "Objectives" },
+      { href: "/objectives", label: "Goals" },
       { href: "/pourquoi/vision-strategy", label: "Strategy Notes" },
       { href: "/pourquoi/decisions", label: "Decisions" },
     ],

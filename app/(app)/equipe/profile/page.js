@@ -75,58 +75,60 @@ export default function ProfilePage() {
                 <p className="text-xs text-[#475569] font-mono">{profile.email}</p>
               </div>
             </div>
-            {profile.bio && <p className="text-sm text-[#94a3b8] mt-4 leading-relaxed">{profile.bio}</p>}
+            <p className="text-sm mt-4 leading-relaxed" style={{ color: profile.bio ? "#94a3b8" : "#475569" }}>
+              {profile.bio || <span className="italic">Bio not defined</span>}
+            </p>
           </Card>
 
           {/* Contact */}
-          {(profile.phone || profile.linkedin || profile.telegram_chat_id) && (
-            <Card>
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Contact</h3>
-              <div className="space-y-2">
-                {profile.phone && <InfoRow label="Phone" value={profile.phone} />}
-                {profile.linkedin && <InfoRow label="LinkedIn" value={profile.linkedin} link />}
-                {profile.telegram_chat_id && <InfoRow label="Telegram ID" value={profile.telegram_chat_id} />}
-              </div>
-            </Card>
-          )}
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Contact</h3>
+            <div className="space-y-2">
+              <InfoRow label="Phone" value={profile.phone} />
+              <InfoRow label="LinkedIn" value={profile.linkedin} link />
+              <InfoRow label="Telegram ID" value={profile.telegram_chat_id} />
+            </div>
+          </Card>
 
           {/* Skills */}
-          {(profile.skills || []).length > 0 && (
-            <Card>
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Skills</h3>
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Skills</h3>
+            {(profile.skills || []).length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {profile.skills.map((s, i) => (
                   <span key={i} className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold">{s}</span>
                 ))}
               </div>
-            </Card>
-          )}
+            ) : (
+              <p className="text-xs text-[#475569] italic">Not defined</p>
+            )}
+          </Card>
 
-          {/* Languages & Timezone */}
-          {((profile.languages || []).length > 0 || profile.timezone) && (
-            <Card>
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Availability</h3>
-              <div className="space-y-2">
-                {profile.timezone && <InfoRow label="Timezone" value={profile.timezone} />}
-                {profile.availability && <InfoRow label="Hours" value={profile.availability} />}
-                {(profile.languages || []).length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[#475569] w-20 shrink-0">Languages</span>
-                    <div className="flex gap-1 flex-wrap">
-                      {profile.languages.map((l, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded bg-[#1e293b] text-[#94a3b8] text-xs">{l}</span>
-                      ))}
-                    </div>
+          {/* Availability */}
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Availability</h3>
+            <div className="space-y-2">
+              <InfoRow label="Timezone" value={profile.timezone} />
+              <InfoRow label="Hours" value={profile.availability} />
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#475569] w-20 shrink-0">Languages</span>
+                {(profile.languages || []).length > 0 ? (
+                  <div className="flex gap-1 flex-wrap">
+                    {profile.languages.map((l, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded bg-[#1e293b] text-[#94a3b8] text-xs">{l}</span>
+                    ))}
                   </div>
+                ) : (
+                  <span className="text-xs text-[#475569] italic">Not defined</span>
                 )}
               </div>
-            </Card>
-          )}
+            </div>
+          </Card>
 
           {/* URLs */}
-          {(profile.urls || []).length > 0 && (
-            <Card>
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Links</h3>
+          <Card>
+            <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Links</h3>
+            {(profile.urls || []).length > 0 ? (
               <div className="space-y-2">
                 {profile.urls.map((u, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -135,17 +137,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </Card>
-          )}
-
-          {/* Empty state */}
-          {!profile.bio && (profile.skills || []).length === 0 && !profile.phone && (
-            <Card className="border-dashed border-[#334155]">
-              <p className="text-sm text-[#475569] text-center py-6">
-                Your profile is empty. Click "Edit Profile" to fill it in!
-              </p>
-            </Card>
-          )}
+            ) : (
+              <p className="text-xs text-[#475569] italic">Not defined</p>
+            )}
+          </Card>
         </div>
       ) : (
         /* === EDIT MODE === */
@@ -204,7 +199,9 @@ function InfoRow({ label, value, link }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-[#475569] w-20 shrink-0">{label}</span>
-      {link ? (
+      {!value ? (
+        <span className="text-xs text-[#475569] italic">Not defined</span>
+      ) : link ? (
         <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline truncate">{value}</a>
       ) : (
         <span className="text-xs text-[#e2e8f0] font-mono">{value}</span>

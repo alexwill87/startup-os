@@ -27,6 +27,7 @@ const inputClass = "w-full py-2.5 px-3 rounded-lg border border-[#1e293b] bg-[#0
 export default function FeedbackPage() {
   const { user, member, isAdmin } = useAuth();
   const [items, setItems] = useState([]);
+  const [userVotes, setUserVotes] = useState(new Set());
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("all");
   const [form, setForm] = useState({ type: "improvement", title: "", body: "" });
@@ -43,6 +44,12 @@ export default function FeedbackPage() {
   async function fetchFeedback() {
     const { data } = await supabase.from("cockpit_feedback").select("*").order("votes", { ascending: false }).order("created_at", { ascending: false });
     setItems(data || []);
+    // Load user's existing votes
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: myVotes } = await supabase.from("cockpit_votes").select("entity_id").eq("entity_type", "feedback").eq("voter_id", authUser.id);
+      setUserVotes(new Set((myVotes || []).map((v) => v.entity_id)));
+    }
   }
 
   async function submit(e) {
@@ -99,6 +106,18 @@ export default function FeedbackPage() {
 
   async function addReviewNote(id, note) {
     await supabase.from("cockpit_feedback").update({ review_note: note }).eq("id", id);
+  }
+
+  async function convertToFeature(item) {
+    const body = JSON.stringify({
+      phase: "proposed", description: item.body || "", prompt: "",
+      votes: [], ready: false, goal_id: "", assigned_to: "", checklist: [], from_feedback: item.id,
+    });
+    await supabase.from("cockpit_vision").insert({
+      topic: "roadmap", title: item.title, body, builder: member?.builder, created_by: member?.user_id,
+    });
+    await supabase.from("cockpit_feedback").update({ status: "planned" }).eq("id", item.id);
+    await logActivity("created", "feature", { title: `From feedback: ${item.title}` });
   }
 
   const filtered = filter === "all" ? items : items.filter((i) => i.type === filter);
@@ -167,8 +186,8 @@ export default function FeedbackPage() {
                 <div className="flex items-start gap-4">
                   {/* Vote button */}
                   <button onClick={() => vote(item.id)} className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
-                    <span className="text-[#475569] hover:text-[#93c5fd] transition-colors text-sm">▲</span>
-                    <span className="text-sm font-bold text-white">{item.votes || 0}</span>
+                    <span className={`transition-colors text-sm ${userVotes.has(item.id) ? "text-blue-400" : "text-[#475569] hover:text-[#93c5fd]"}`}>▲</span>
+                    <span className={`text-sm font-bold ${userVotes.has(item.id) ? "text-blue-400" : "text-white"}`}>{item.votes || 0}</span>
                   </button>
 
                   {/* Content */}
@@ -206,6 +225,12 @@ export default function FeedbackPage() {
                         defaultValue={item.review_note || ""}
                         onBlur={(e) => addReviewNote(item.id, e.target.value)}
                         className="py-1 px-2 rounded border border-[#1e293b] bg-[#0a0f1a] text-[10px] font-mono outline-none text-[#64748b] w-28" />
+                      {item.status !== "planned" && item.status !== "deployed" && (
+                        <button onClick={() => convertToFeature(item)}
+                          className="py-1 px-2 rounded text-[10px] font-bold text-amber-400 bg-amber-400/10 hover:bg-amber-400/20 transition">
+                          → Feature
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
