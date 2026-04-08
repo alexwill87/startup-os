@@ -11,13 +11,13 @@ const COLOR = "#f59e0b";
 const JALONS = [
   {
     id: "J1", title: "Foundation", status: "done",
-    desc: "Infrastructure: Supabase, Auth, Deploy, Bot, 50+ routes",
-    items: ["Supabase project created", "Auth system (magic link)", "Vercel deployment", "Telegram bot connected", "50+ routes live", "Database tables created"],
+    desc: "Infrastructure: Supabase, Auth, Deploy, Bot, 53 routes",
+    items: ["Supabase project created", "Auth system (magic link)", "Vercel deployment", "Telegram bot connected", "53 routes live", "13 tables created"],
   },
   {
     id: "J2", title: "Structure", status: "done",
-    desc: "Checklist items, pillar dashboards, completion %, activity feed",
-    items: ["Checklist items seeded", "PillarDashboard component", "Real completion %", "Activity feed", "File uploads + gallery", "API Keys vault"],
+    desc: "76 checklist items, pillar dashboards, completion %, activity feed",
+    items: ["76 checklist items seeded", "PillarDashboard component", "Real completion %", "Activity feed", "File uploads + gallery", "API Keys vault"],
   },
   {
     id: "J3", title: "Connection", status: "in_progress",

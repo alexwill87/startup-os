@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase, SPRINTS } from "@/lib/supabase";
-import { useAuth, useMembers } from "@/lib/AuthProvider";
+import { useAuth, useMembers, useProject } from "@/lib/AuthProvider";
 import Card from "@/app/components/Card";
 import Link from "next/link";
 
@@ -44,6 +44,7 @@ function timeAgo(dateStr) {
 export default function HomeDashboard() {
   const { member, canEdit, isObserver, isMentor } = useAuth();
   const members = useMembers();
+  const project = useProject();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -107,15 +108,16 @@ export default function HomeDashboard() {
       {/* Header */}
       <div className="mb-2">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Startup OS</h1>
+          {project.logo && <img src={project.logo} alt="" className="w-8 h-8 rounded-lg object-contain" />}
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">{project.name}</h1>
           <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            Project OS
+            Cockpit
           </span>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#1e293b] text-[#64748b]">
             {userRole}
           </span>
         </div>
-        <p className="text-sm text-[#94a3b8] leading-relaxed max-w-2xl">{VISION_ONELINER}</p>
+        <p className="text-sm text-[#94a3b8] leading-relaxed max-w-2xl">{project.description || VISION_ONELINER}</p>
         {member && (
           <p className="text-xs text-[#475569] mt-2">
             Welcome back, <span className="text-white font-semibold">{member.name || member.email}</span>

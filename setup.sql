@@ -222,9 +222,6 @@ CREATE INDEX IF NOT EXISTS idx_members_status ON cockpit_members(status);
 -- Seed the 3 current builders as active members
 -- (Alex is admin since he owns the Supabase/Vercel accounts)
 INSERT INTO cockpit_members (email, name, role, builder, color, status) VALUES
-  ('alexwillemetz@gmail.com', 'Alex', 'admin', 'B', '#10b981', 'active'),
-  ('abdulmalikajibade@gmail.com', 'Abdulmalik', 'member', 'A', '#3b82f6', 'active'),
-  ('pokamblg@gmail.com', 'Loice', 'member', 'C', '#f59e0b', 'active')
 ON CONFLICT (email) DO NOTHING;
 -- ============================================
 -- MEMBER PROFILES — Editable fields per person
@@ -566,7 +563,6 @@ ALTER TABLE cockpit_members ADD CONSTRAINT cockpit_members_role_check
 -- Upgrade existing admins to cofounders
 UPDATE cockpit_members SET role = 'cofounder' WHERE role = 'admin';
 -- Keep one as admin too (Alex)
-UPDATE cockpit_members SET role = 'cofounder' WHERE email = 'alexwillemetz@gmail.com';
 -- ============================================
 -- FEEDBACK — Suggestions, bugs, feature requests
 -- ============================================
@@ -619,7 +615,6 @@ CREATE INDEX IF NOT EXISTS idx_votes_voter ON cockpit_votes(voter_id);
 
 -- First: promote the 3 core builders to cofounder
 UPDATE cockpit_members SET role = 'cofounder'
-WHERE email IN ('abdulmalikajibade@gmail.com', 'alexwillemetz@gmail.com', 'pokamblg@gmail.com')
   AND role != 'admin';
 
 -- Map remaining old roles

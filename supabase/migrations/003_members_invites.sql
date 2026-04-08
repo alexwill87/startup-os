@@ -52,3 +52,8 @@ CREATE INDEX IF NOT EXISTS idx_members_status ON cockpit_members(status);
 
 -- Seed the 3 current builders as active members
 -- (Alex is admin since he owns the Supabase/Vercel accounts)
+INSERT INTO cockpit_members (email, name, role, builder, color, status) VALUES
+  ('alexwillemetz@gmail.com', 'Alex', 'admin', 'B', '#10b981', 'active'),
+  ('abdulmalikajibade@gmail.com', 'Abdulmalik', 'member', 'A', '#3b82f6', 'active'),
+  ('pokamblg@gmail.com', 'Loice', 'member', 'C', '#f59e0b', 'active')
+ON CONFLICT (email) DO NOTHING;
