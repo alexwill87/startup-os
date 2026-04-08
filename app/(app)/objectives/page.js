@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth, useMembers } from "@/lib/AuthProvider";
 import { logActivity } from "@/lib/activity";
 import Card from "@/app/components/Card";
+import Link from "next/link";
 
 const PILLARS = [
   { id: "why", label: "Why", color: "#3b82f6", desc: "Define the mission, the problem we solve, and why now." },
@@ -84,12 +85,22 @@ export default function GoalsPage() {
     if (!newText.trim()) return;
     const pillarObjs = objectives.filter((o) => o.pillar === pillarId);
     if (pillarObjs.length >= MAX_PER_PILLAR) return;
-    await supabase.from("cockpit_objectives").insert({
+    const { data: created } = await supabase.from("cockpit_objectives").insert({
       title: newText.trim(), pillar: pillarId, status: "proposed",
       proposed_by: member?.name || member?.email, sort_order: pillarObjs.length,
-    });
+    }).select("id").single();
+    // Auto-vote agree on own goal
+    if (created?.id) {
+      try {
+        await supabase.from("cockpit_comments").insert({
+          entity_type: "goal", entity_id: created.id,
+          body: "I propose this goal.", vote: "agree", author_id: user?.id,
+        });
+      } catch { /* migration 015 not applied yet */ }
+    }
     await logActivity("created", "goal", { title: newText.trim() });
     setNewText(""); setAddingPillar(null);
+    fetchAll();
   }
 
   async function saveEdit(obj) {
@@ -184,7 +195,9 @@ export default function GoalsPage() {
                       <>
                         <p className="text-lg font-bold text-white leading-relaxed">{obj.title}</p>
                         <div className="flex items-center gap-3 mt-3 flex-wrap">
-                          <span className="text-[10px] text-[#475569] font-mono">by {obj.proposed_by || "Unknown"}</span>
+                          {(() => { const m = members.find((x) => x.name === obj.proposed_by || x.email === obj.proposed_by); return m ? (
+                            <Link href={`/equipe/member/${m.id}`} className="text-[10px] text-blue-400 font-mono hover:underline">by {obj.proposed_by}</Link>
+                          ) : <span className="text-[10px] text-[#475569] font-mono">by {obj.proposed_by || "Unknown"}</span>; })()}
                           {/* Vote summary */}
                           {["agree", "disagree", "neutral"].map((v) => (
                             <span key={v} className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: VOTE_COLORS[v], backgroundColor: VOTE_COLORS[v] + "15" }}>

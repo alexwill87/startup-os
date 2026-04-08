@@ -31,7 +31,7 @@ export default function ProfilePage() {
     await supabase.from("cockpit_members").update({
       name: draft.name, bio: draft.bio, phone: draft.phone, linkedin: draft.linkedin,
       telegram_chat_id: draft.telegram_chat_id, skills: draft.skills, languages: draft.languages,
-      timezone: draft.timezone, availability: draft.availability, urls: draft.urls,
+      timezone: draft.timezone, availability: draft.availability, urls: draft.urls, avatar_url: draft.avatar_url,
     }).eq("id", member.id);
     setProfile(draft);
     setEditing(false);
@@ -66,8 +66,10 @@ export default function ProfilePage() {
           {/* Header card */}
           <Card>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-extrabold text-white" style={{ backgroundColor: profile.color || "#3b82f6" }}>
-                {(profile.name || profile.email || "?").charAt(0)}
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-extrabold text-white overflow-hidden" style={{ backgroundColor: profile.color || "#3b82f6" }}>
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (profile.name || profile.email || "?").charAt(0)}
               </div>
               <div>
                 <h2 className="text-xl font-extrabold text-white">{profile.name || profile.email}</h2>
@@ -148,6 +150,17 @@ export default function ProfilePage() {
           <Card>
             <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Identity</h3>
             <div className="space-y-3">
+              {/* Avatar upload */}
+              <div>
+                <label className="block text-[10px] text-[#475569] mb-1">Avatar</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white overflow-hidden" style={{ backgroundColor: draft.color || "#3b82f6" }}>
+                    {draft.avatar_url ? <img src={draft.avatar_url} alt="" className="w-full h-full object-cover" /> : (draft.name || "?").charAt(0)}
+                  </div>
+                  <input type="url" value={draft.avatar_url || ""} onChange={(e) => updateDraft("avatar_url", e.target.value)}
+                    placeholder="Image URL (paste a link)" className="flex-1 py-2 px-3 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-xs outline-none" />
+                </div>
+              </div>
               <EditField label="Name" value={draft.name || ""} onChange={(v) => updateDraft("name", v)} />
               <EditField label="Bio" value={draft.bio || ""} onChange={(v) => updateDraft("bio", v)} multiline placeholder="A short bio about yourself..." />
             </div>

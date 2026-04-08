@@ -15,8 +15,6 @@ const ALL_PILLARS = [
     items: [
       { href: "/pourquoi/mission", label: "Vision" },
       { href: "/objectives", label: "Goals" },
-      { href: "/pourquoi/vision-strategy", label: "Strategy Notes" },
-      { href: "/pourquoi/decisions", label: "Decisions" },
     ],
   },
   {
