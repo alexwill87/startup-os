@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/AuthProvider";
+import { useState } from "react";
+import { useAuth, useProject } from "@/lib/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
 const ALL_PILLARS = [
@@ -115,14 +115,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { builder, member } = useAuth();
   const userRole = member?.role || "observer";
+  const project = useProject();
   const PILLARS = ALL_PILLARS.filter((p) => p.access.includes(userRole));
   const [collapsed, setCollapsed] = useState(false);
-  const [projectName, setProjectName] = useState("Project OS");
-
-  useEffect(() => {
-    supabase.from("cockpit_vision").select("body").eq("topic", "other").eq("title", "config:project_name").maybeSingle()
-      .then(({ data }) => { if (data?.body) setProjectName(data.body); });
-  }, []);
   const [openPillars, setOpenPillars] = useState(() => {
     // Open the pillar that matches current path
     const current = PILLARS.find((p) => pathname.startsWith(`/${p.id}`));
@@ -147,8 +142,9 @@ export default function Sidebar() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border)" }}>
         {!collapsed && (
-          <Link href="/" className="text-[15px] font-extrabold text-white tracking-tight">
-            {projectName}
+          <Link href="/" className="flex items-center gap-2 text-[15px] font-extrabold text-white tracking-tight">
+            {project.logo && <img src={project.logo} alt="" className="w-6 h-6 rounded object-contain" />}
+            {project.name || "..."}
           </Link>
         )}
         <button

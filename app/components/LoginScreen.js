@@ -1,120 +1,122 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function LoginScreen() {
-  const [mode, setMode] = useState("magic");
+  const [pName, setPName] = useState("");
+  const [pLogo, setPLogo] = useState(null);
+  const [pDesc, setPDesc] = useState("");
+  const [pFeatures, setPFeatures] = useState([]);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    fetch("/api/project").then((r) => r.json()).then((d) => {
+      if (d.name) setPName(d.name);
+      if (d.logo) setPLogo(d.logo);
+      if (d.description) setPDesc(d.description);
+      if (d.features?.length) setPFeatures(d.features);
+    }).catch(() => {});
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    if (mode === "magic") {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
-        },
-      });
-      if (error) setError(error.message);
-      else setSuccess("Check your inbox — we sent you a login link.");
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
-    }
+    setLoading(true); setError(null); setSuccess(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+    });
+    if (error) setError(error.message);
+    else setSuccess("Check your inbox — we sent you a login link.");
     setLoading(false);
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#080c14" }}>
-      <div className="w-full max-w-[380px] px-4">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-3">&#x1F6E1;</div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            Project <span className="text-[#3b82f6]">OS</span>
-          </h1>
-          <p className="text-[#475569] text-xs font-mono mt-2">
-            Team dashboard for builders
+    <div className="min-h-screen" style={{ background: "#080c14" }}>
+      {/* Hero */}
+      <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            {pLogo && <img src={pLogo} alt="" className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-contain" />}
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+              {pName || "Startup OS"}
+            </h1>
+          </div>
+          <p className="text-lg text-[#94a3b8] max-w-2xl mx-auto leading-relaxed">
+            {pDesc || "Your startup cockpit. Define, vote, build, and ship — together."}
           </p>
         </div>
+      </div>
 
-        {/* Card */}
-        <div className="bg-[#0d1117] border border-[#1e293b] rounded-2xl p-7">
-          {/* Mode toggle */}
-          <div className="flex bg-[#0a0f1a] rounded-lg p-1 gap-1 mb-6">
-            {[["magic", "Magic Link"], ["signin", "Password"]].map(([m, label]) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setError(null); setSuccess(null); }}
-                className={`flex-1 py-2 rounded-md text-xs font-mono transition-all ${
-                  mode === m
-                    ? "bg-[#1e3a5f] text-[#93c5fd] font-bold"
-                    : "text-[#475569] hover:text-[#94a3b8]"
-                }`}
-              >
-                {label}
-              </button>
+      {/* Features grid */}
+      {pFeatures.filter((f) => f.title).length > 0 && (
+        <div className="max-w-4xl mx-auto px-6 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {pFeatures.filter((f) => f.title).map((f, i) => (
+              <div key={i} className="p-5 rounded-xl border border-[#1e293b] bg-[#0d1117]">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 text-lg font-bold mb-3">{f.icon || "+"}</div>
+                <h3 className="text-sm font-bold text-white mb-1">{f.title}</h3>
+                <p className="text-xs text-[#64748b]">{f.desc}</p>
+              </div>
             ))}
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="email"
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full py-3 px-4 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm font-mono outline-none focus:border-[#3b82f6] transition-colors"
-            />
-
-            {mode === "signin" && (
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full py-3 px-4 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm font-mono outline-none focus:border-[#3b82f6] transition-colors"
-              />
-            )}
-
-            {error && (
-              <div className="bg-red-500/5 border border-red-500/20 rounded-lg py-2.5 px-3 text-red-400 text-xs font-mono">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg py-2.5 px-3 text-emerald-400 text-xs font-mono">
-                {success}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-[#1e3a5f] to-[#2d1b69] text-[#93c5fd] text-sm font-bold font-mono hover:opacity-90 disabled:opacity-50 disabled:cursor-wait transition-opacity"
-            >
-              {loading
-                ? "..."
-                : mode === "magic"
-                ? "Send Login Link"
-                : "Sign in"}
-            </button>
-          </form>
         </div>
+      )}
 
-        <p className="text-center text-[#334155] text-[11px] font-mono mt-5">
-          Invitation only — ask your team admin for access.
+      {/* Login + Apply */}
+      <div className="max-w-4xl mx-auto px-6 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Login */}
+          <div className="p-6 rounded-xl border border-[#1e293b] bg-[#0d1117]">
+            <h2 className="text-base font-bold text-white mb-1">Team Member?</h2>
+            <p className="text-xs text-[#475569] mb-4">Sign in with your email to access the cockpit.</p>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@email.com"
+                className="w-full py-3 px-4 rounded-lg border border-[#1e293b] bg-[#0a0f1a] text-white text-sm outline-none focus:border-blue-500" />
+              {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-3">{error}</p>}
+              {success && <p className="text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg py-2 px-3">{success}</p>}
+              <button type="submit" disabled={loading}
+                className="w-full py-3 rounded-lg text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 transition disabled:opacity-50">
+                {loading ? "Sending..." : "Send Login Link"}
+              </button>
+            </form>
+          </div>
+
+          {/* Apply */}
+          <div className="p-6 rounded-xl border border-[#1e293b] bg-[#0d1117]">
+            <h2 className="text-base font-bold text-white mb-1">Want to Join?</h2>
+            <p className="text-xs text-[#475569] mb-4">Apply for access as a mentor, observer, or co-founder.</p>
+            <div className="space-y-3">
+              {[
+                { role: "Observer", desc: "Follow progress, see KPIs, give feedback", color: "#64748b" },
+                { role: "Mentor", desc: "Advise the team, vote on goals and decisions", color: "#10b981" },
+                { role: "Co-founder", desc: "Join the core team, build and ship", color: "#3b82f6" },
+              ].map((r) => (
+                <div key={r.role} className="flex items-center gap-3 p-3 rounded-lg border border-[#1e293b]">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                  <div className="flex-1">
+                    <p className="text-xs font-bold" style={{ color: r.color }}>{r.role}</p>
+                    <p className="text-[10px] text-[#475569]">{r.desc}</p>
+                  </div>
+                </div>
+              ))}
+              <Link href="/apply"
+                className="block w-full py-3 rounded-lg text-sm font-bold text-center text-purple-400 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition">
+                Request Access
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-[#1e293b] py-6 text-center">
+        <p className="text-[10px] text-[#334155]">
+          Powered by <a href="https://github.com/alexwill87/startup-os" target="_blank" rel="noopener noreferrer" className="text-[#475569] hover:text-white">Startup OS</a>
         </p>
       </div>
     </div>

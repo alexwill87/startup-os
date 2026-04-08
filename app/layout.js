@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Startup OS",
-  description: "Team dashboard for builders — 7 pillars, real-time collaboration",
+  description: "Open-source startup operating system.",
   icons: {
-    icon: "/icon.svg",
+    icon: "/api/favicon",
   },
 };
 

@@ -14,6 +14,7 @@ export default function ConfigPage() {
   const [cfg, setCfg] = useState({});
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [memberCount, setMemberCount] = useState(0);
   const [dbStatus, setDbStatus] = useState("checking");
   const [deploymentUrl, setDeploymentUrl] = useState("");
@@ -28,6 +29,13 @@ export default function ConfigPage() {
   // Validation settings
   const [featureVotePct, setFeatureVotePct] = useState("66");
   const [controlVotePct, setControlVotePct] = useState("66");
+
+  // Landing page content
+  const [landingFeatures, setLandingFeatures] = useState([
+    { icon: "~", title: "", desc: "" },
+    { icon: "+", title: "", desc: "" },
+    { icon: "*", title: "", desc: "" },
+  ]);
 
   // API Keys
   const [apiKeys, setApiKeys] = useState([]);
@@ -47,6 +55,12 @@ export default function ConfigPage() {
 
     const { data: descRow } = await supabase.from("cockpit_vision").select("body").eq("topic", "other").eq("title", "config:description").maybeSingle();
     if (descRow?.body) setDescription(descRow.body);
+
+    const { data: logoRow } = await supabase.from("cockpit_vision").select("body").eq("topic", "other").eq("title", "config:logo_url").maybeSingle();
+    if (logoRow?.body) setLogoUrl(logoRow.body);
+
+    const { data: lfRow } = await supabase.from("cockpit_vision").select("body").eq("topic", "other").eq("title", "config:landing_features").maybeSingle();
+    if (lfRow?.body) { try { setLandingFeatures(JSON.parse(lfRow.body)); } catch {} }
 
     const { count } = await supabase.from("cockpit_members").select("*", { count: "exact", head: true });
     setMemberCount(count || 0);
@@ -72,7 +86,7 @@ export default function ConfigPage() {
 
   async function saveProject() {
     setSaving(true);
-    for (const [key, value] of [["config:project_name", projectName], ["config:description", description]]) {
+    for (const [key, value] of [["config:project_name", projectName], ["config:description", description], ["config:logo_url", logoUrl], ["config:landing_features", JSON.stringify(landingFeatures)]]) {
       const { data: existing } = await supabase.from("cockpit_vision").select("id").eq("topic", "other").eq("title", key).maybeSingle();
       if (existing) await supabase.from("cockpit_vision").update({ body: value }).eq("id", existing.id);
       else await supabase.from("cockpit_vision").insert({ topic: "other", title: key, body: value, created_by: user?.id });
@@ -140,11 +154,38 @@ export default function ConfigPage() {
           <div className="space-y-3">
             <div>
               <label className="block text-[10px] text-[#475569] mb-1">Name</label>
-              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="My Startup" className={input} />
+              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Radar" className={input} />
             </div>
             <div>
               <label className="block text-[10px] text-[#475569] mb-1">Description</label>
               <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description" className={input} />
+            </div>
+            <div>
+              <label className="block text-[10px] text-[#475569] mb-1">Logo</label>
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="" className="w-12 h-12 rounded-lg object-contain shrink-0 bg-[#1e293b] p-1" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-[#1e293b] flex items-center justify-center text-[#334155] text-xs shrink-0">No logo</div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#334155] text-xs text-[#64748b] hover:border-blue-500 hover:text-blue-400 cursor-pointer transition">
+                    <span>Upload image</span>
+                    <input type="file" accept="image/*" className="sr-only" onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const path = `branding/logo-${Date.now()}.${file.name.split(".").pop()}`;
+                      const { error } = await supabase.storage.from("project-files").upload(path, file, { upsert: true });
+                      if (!error) {
+                        const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+                        if (urlData?.publicUrl) setLogoUrl(urlData.publicUrl);
+                      }
+                    }} />
+                  </label>
+                  <input type="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Or paste URL" className={input + " text-xs"} />
+                </div>
+              </div>
+              <p className="text-[9px] text-[#334155] mt-1">Appears in sidebar, landing page, apply page</p>
             </div>
           </div>
         </Card>
@@ -228,6 +269,27 @@ export default function ConfigPage() {
           </select>
           <input type="password" value={newKey.key} onChange={(e) => setNewKey({ ...newKey, key: e.target.value })} placeholder="Paste API key..." className={input + " flex-1"} />
           <button onClick={addApiKey} className="px-4 py-2 text-xs font-bold rounded-lg text-white bg-blue-500 shrink-0">Add</button>
+        </div>
+      </Card>
+
+      {/* Row 4: Landing Page Content */}
+      <Card>
+        <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">Landing Page — Feature Cards</h3>
+        <p className="text-[9px] text-[#334155] mb-4">These 3 cards appear on the public landing page. Leave empty to hide.</p>
+        <div className="space-y-4">
+          {landingFeatures.map((feat, idx) => (
+            <div key={idx} className="grid grid-cols-[40px_1fr_2fr] gap-2 items-start">
+              <input type="text" value={feat.icon} onChange={(e) => {
+                const nf = [...landingFeatures]; nf[idx] = { ...nf[idx], icon: e.target.value }; setLandingFeatures(nf);
+              }} maxLength={2} className={input + " text-center text-lg"} placeholder="~" />
+              <input type="text" value={feat.title} onChange={(e) => {
+                const nf = [...landingFeatures]; nf[idx] = { ...nf[idx], title: e.target.value }; setLandingFeatures(nf);
+              }} className={input + " text-xs"} placeholder={`Feature ${idx + 1} title`} />
+              <input type="text" value={feat.desc} onChange={(e) => {
+                const nf = [...landingFeatures]; nf[idx] = { ...nf[idx], desc: e.target.value }; setLandingFeatures(nf);
+              }} className={input + " text-xs"} placeholder="Short description" />
+            </div>
+          ))}
         </div>
       </Card>
     </div>
