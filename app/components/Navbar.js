@@ -22,7 +22,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <span className="logo">Radar Cockpit</span>
+      <span className="logo">Startup OS</span>
 
       <div className="nav-links">
         {NAV_ITEMS.map(({ href, label }) => {

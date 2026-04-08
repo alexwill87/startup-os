@@ -171,7 +171,7 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <EditField label="Phone" value={draft.phone || ""} onChange={(v) => updateDraft("phone", v)} placeholder="+33 6 12 34 56 78" />
               <EditField label="LinkedIn" value={draft.linkedin || ""} onChange={(v) => updateDraft("linkedin", v)} placeholder="https://linkedin.com/in/..." />
-              <EditField label="Telegram Chat ID" value={draft.telegram_chat_id || ""} onChange={(v) => updateDraft("telegram_chat_id", v)} placeholder="From @RadarPMBot /start" />
+              <EditField label="Telegram Chat ID" value={draft.telegram_chat_id || ""} onChange={(v) => updateDraft("telegram_chat_id", v)} placeholder="From @YourBot /start" />
             </div>
           </Card>
 

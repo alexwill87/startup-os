@@ -205,7 +205,7 @@ Rules: Keep replies under 300 chars. Use emojis. Answer in the same language as 
         action: "responded",
         entity_type: "bot",
         entity_title: text.slice(0, 50),
-        actor_name: "RadarBot",
+        actor_name: "Bot",
         actor_email: "bot",
         metadata: { provider: actualProvider, model, user: userName },
       });

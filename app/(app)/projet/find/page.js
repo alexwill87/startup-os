@@ -68,7 +68,7 @@ export default function FindPage() {
       const existingCtx = existingFeatures.map((f) => f.title).join(", ");
       const discCtx = discoveries.map((d) => d.title).join(", ");
 
-      const prompt = `You are a product strategist for Radar, a startup that monitors job platforms and sends AI-powered alerts with tailored CVs.
+      const prompt = `You are a product strategist for your startup project.
 
 PROJECT CONTEXT:
 Goals:
@@ -80,7 +80,7 @@ ${visionCtx || "Not defined yet"}
 Existing features (DO NOT duplicate): ${existingCtx || "None"}
 Already discovered (DO NOT duplicate): ${discCtx || "None"}
 
-TASK: Propose 5 NEW feature ideas that would help Radar achieve its goals. For each feature, provide:
+TASK: Propose 5 NEW feature ideas that would help the project achieve its goals. For each feature, provide:
 - title: short feature name
 - description: 1-2 sentences on what it does
 - why: why this feature matters for the project
@@ -127,7 +127,7 @@ Return ONLY a JSON array. No markdown, no explanation. Example:
     const existingCtx = existingFeatures.map((f) => `- ${f.title}`).join("\n");
     const membersCtx = members.filter((m) => m.status === "active").map((m) => `- ${m.name} (${m.role})`).join("\n");
 
-    const md = `# Feature Discovery — Mega Prompt for Radar Cockpit
+    const md = `# Feature Discovery — Mega Prompt for Startup OS
 
 ## Instructions
 You are a product strategist. Analyze the project below and propose **10-20 feature ideas**.
@@ -141,8 +141,8 @@ For EACH feature, return a JSON object with these exact fields:
 
 Return ONLY a JSON array. No markdown wrapping. The result will be uploaded directly.
 
-## Project: Radar
-Radar monitors job platforms and sends AI-powered alerts with tailored CVs and pitch letters.
+## Project Context
+Describe your startup here.
 
 ## Vision
 ${visionCtx || "Not defined yet — propose features that help define it"}
@@ -163,7 +163,7 @@ Next.js 16, Supabase (PostgreSQL + Auth + Realtime + Storage), Tailwind CSS v4, 
 - Features that move the product forward
 - Features that help the team collaborate better
 - Features that attract users and generate revenue
-- Both product features (for Radar users) and cockpit features (for the team)
+- Both product features (for end users) and cockpit features (for the team)
 - Be creative, specific, and actionable
 `;
 
@@ -171,7 +171,7 @@ Next.js 16, Supabase (PostgreSQL + Auth + Realtime + Storage), Tailwind CSS v4, 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `radar-mega-prompt-${new Date().toISOString().slice(0, 10)}.md`;
+    a.download = `mega-prompt-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
   }

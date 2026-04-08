@@ -140,7 +140,7 @@ export default function ConfigPage() {
           <div className="space-y-3">
             <div>
               <label className="block text-[10px] text-[#475569] mb-1">Name</label>
-              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Radar" className={input} />
+              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="My Startup" className={input} />
             </div>
             <div>
               <label className="block text-[10px] text-[#475569] mb-1">Description</label>

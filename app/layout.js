@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Project OS — Radar",
+  title: "Startup OS",
   description: "Team dashboard for builders — 7 pillars, real-time collaboration",
   icons: {
     icon: "/icon.svg",

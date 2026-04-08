@@ -33,7 +33,7 @@ export default function AgentsPage() {
       const agentList = [
         {
           id: "telegram-bot",
-          name: "@RadarPMBot",
+          name: "@YourBot",
           type: "Telegram Bot",
           description: "PM assistant that creates tasks, generates summaries, and answers questions about the project with full context.",
           status: cfg.telegram_bot_token ? "active" : "no token",

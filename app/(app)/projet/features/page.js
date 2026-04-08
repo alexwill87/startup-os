@@ -85,7 +85,7 @@ export default function FeaturesPage() {
     try {
       const goalsCtx = goals.map((g) => `[${g.pillar}] ${g.title}`).join("; ");
       const prompts = {
-        description: `RESPOND WITH ONLY THE DESCRIPTION, NO PREAMBLE. Write exactly 1-2 sentences describing what the feature "${form.title}" does for Radar (a job platform monitoring tool with AI alerts and tailored CVs). Project goals: ${goalsCtx}.`,
+        description: `RESPOND WITH ONLY THE DESCRIPTION, NO PREAMBLE. Write exactly 1-2 sentences describing what the feature "${form.title}" does for your startup. Project goals: ${goalsCtx}.`,
         kpi_expected: `RESPOND WITH ONLY THE KPI, NO PREAMBLE. One specific measurable metric with a target number for the feature "${form.title}". Format: "[Metric] by [X]% within [timeframe]". Example: "Increase daily active users by 25% within 2 months".`,
         prompt: `RESPOND WITH ONLY THE TECHNICAL PROMPT, NO PREAMBLE. Write a clear, specific instruction (100-150 words) for a coding AI agent to implement "${form.title}" in a Next.js 16 + Supabase + Tailwind v4 app. Include: what components to create, what Supabase tables to use/create, what the UI should look like. Description: ${form.description || form.title}.`,
         checklist: `RESPOND WITH ONLY A JSON ARRAY, NO PREAMBLE, NO MARKDOWN. Break down "${form.title}" into 3-6 implementation tasks. Example: ["Create database table","Build API endpoint","Implement UI component","Add tests"]`,

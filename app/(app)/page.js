@@ -7,7 +7,7 @@ import Card from "@/app/components/Card";
 import Link from "next/link";
 
 const VISION_ONELINER =
-  "Radar monitors every job platform you care about and the moment a matching opportunity appears, it sends you an instant alert with a tailored CV and pitch.";
+  "Your startup description goes here. Define it in Purpose > Vision.";
 
 function getCurrentSprint() {
   const now = new Date();
@@ -107,7 +107,7 @@ export default function HomeDashboard() {
       {/* Header */}
       <div className="mb-2">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Radar</h1>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Startup OS</h1>
           <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
             Project OS
           </span>
@@ -265,7 +265,7 @@ export default function HomeDashboard() {
           <Card className="border-l-2 border-l-cyan-500">
             <p className="text-xs text-[#64748b] font-medium uppercase tracking-wider mb-2">Welcome</p>
             <p className="text-sm text-[#94a3b8]">
-              You're viewing Radar's project cockpit. Explore the mission, check our KPIs,
+              You're viewing the project cockpit. Explore the mission, check our KPIs,
               and share your feedback to help us build a better product.
             </p>
           </Card>
@@ -280,7 +280,7 @@ export default function HomeDashboard() {
             <Link href="/pourquoi/mission">
               <Card className="hover:border-[#334155] cursor-pointer transition-all h-full">
                 <p className="text-xs font-bold text-blue-400 uppercase mb-2">Our Mission</p>
-                <p className="text-sm text-[#94a3b8]">Discover why Radar exists and what problem we solve</p>
+                <p className="text-sm text-[#94a3b8]">Discover the mission and what problem we solve</p>
               </Card>
             </Link>
             <Link href="/analytics/kpis">

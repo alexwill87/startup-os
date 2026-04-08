@@ -73,7 +73,7 @@ export default function Home() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Radar</h1>
+        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Your Startup</h1>
         <p className="text-sm text-[#94a3b8] leading-relaxed max-w-2xl">
           AI-powered job monitoring — instant alerts with tailored CVs and pitches.
         </p>

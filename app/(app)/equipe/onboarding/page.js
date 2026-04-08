@@ -27,7 +27,7 @@ const ONBOARDING = {
     subtitle: "You manage the cockpit. Here's how to set everything up.",
     steps: [
       { label: "Set up your profile", href: "/equipe/profile", desc: "Fill in your bio, skills, and contact info" },
-      { label: "Configure the bot", href: "/setup/bot", desc: "Choose AI provider and model for @RadarPMBot" },
+      { label: "Configure the bot", href: "/setup/bot", desc: "Choose AI provider and model for @YourBot" },
       { label: "Add API keys", href: "/setup/api-keys", desc: "Add OpenRouter, Anthropic, or Mistral keys" },
       { label: "Invite team members", href: "/equipe/members", desc: "Send magic links to cofounders and mentors" },
       { label: "Define the Vision", href: "/pourquoi/mission", desc: "Write the mission, vision, and north star metric" },
@@ -45,7 +45,7 @@ const ONBOARDING = {
       { label: "Define Goals", href: "/objectives", desc: "Propose and validate goals for your pillars" },
       { label: "Check the Board", href: "/projet/features", desc: "See what tasks are assigned to you this sprint" },
       { label: "Join decisions", href: "/pourquoi/decisions", desc: "Vote on open decisions" },
-      { label: "Connect on Telegram", href: "/setup/bot", desc: "Send /start to @RadarPMBot to get notifications" },
+      { label: "Connect on Telegram", href: "/setup/bot", desc: "Send /start to @YourBot to get notifications" },
     ],
   },
   mentor: {

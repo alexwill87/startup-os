@@ -131,3 +131,4 @@ INSERT INTO cockpit_checklist (pillar, category, title, description, format, req
 ('analytics', 'document', 'dashboard.md', 'Dashboard link and screenshot', 'Markdown', true, 8),
 ('analytics', 'action', 'First KPI entry logged', 'At least 1 KPI snapshot in the system', 'KPIs check', true, 9),
 ('analytics', 'action', '3+ KPI entries', 'Regular KPI tracking (3+ entries)', 'KPIs check', true, 10);
+-- Seed data moved to seeds/checklist.sql

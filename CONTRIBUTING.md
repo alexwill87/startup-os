@@ -54,8 +54,8 @@ When you fork Project OS:
 ### Fork and setup
 ```bash
 # Fork on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/radar-cockpit.git
-cd radar-cockpit
+git clone https://github.com/YOUR_USERNAME/startup-os.git
+cd startup-os
 npm install
 
 # Create .env.local with YOUR Supabase credentials
@@ -77,7 +77,7 @@ VALUES ('you@email.com', 'Your Name', 'admin', 'A', '#3b82f6', 'active');
 ## How to Contribute
 
 ### 1. Report Issues
-- Go to [Issues](https://github.com/alexwill87/radar-cockpit/issues)
+- Go to [Issues](https://github.com/alexwill87/startup-os/issues)
 - Use labels: `bug`, `feature`, `enhancement`, `question`
 
 ### 2. Submit a Pull Request
@@ -188,7 +188,7 @@ When you need to change the database schema:
 
 ## Questions?
 
-- Open an [Issue](https://github.com/alexwill87/radar-cockpit/issues)
+- Open an [Issue](https://github.com/alexwill87/startup-os/issues)
 - Or reach out to the team via the cockpit's Feedback page
 
 ---

@@ -12,9 +12,9 @@ const VOTE_ICONS = { agree: "+", disagree: "-", neutral: "~" };
 const VOTE_COLORS = { agree: "#10b981", disagree: "#ef4444", neutral: "#64748b" };
 
 const SECTIONS = [
-  { key: "mission", label: "Mission Statement", placeholder: "What does Radar do and for whom?" },
-  { key: "vision", label: "Vision Statement", placeholder: "Where is Radar going in the long term?" },
-  { key: "problem", label: "Problem Solved", placeholder: "What pain point does Radar address?" },
+  { key: "mission", label: "Mission Statement", placeholder: "What does your startup do and for whom?" },
+  { key: "vision", label: "Vision Statement", placeholder: "Where is your startup going in the long term?" },
+  { key: "problem", label: "Problem Solved", placeholder: "What pain point do you address?" },
   { key: "northstar", label: "North Star Metric", placeholder: "The one metric that matters most..." },
 ];
 
@@ -111,7 +111,7 @@ export default function VisionPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-8">
-      <PageHeader title="Vision" subtitle="Define why Radar exists and where it's going. Each statement needs validation." color={COLOR} />
+      <PageHeader title="Vision" subtitle="Define why your startup exists and where it's going. Each statement needs validation." color={COLOR} />
 
       {loading ? (
         <p className="text-sm text-[#475569] text-center py-8">Loading...</p>

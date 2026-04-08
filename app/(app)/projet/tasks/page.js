@@ -151,7 +151,7 @@ Return ONLY the JSON array.`;
 
     const blob = new Blob([md], { type: "text/markdown" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = `radar-tasks-prompt-${new Date().toISOString().slice(0, 10)}.md`; a.click();
+    a.download = `tasks-prompt-${new Date().toISOString().slice(0, 10)}.md`; a.click();
   }
 
   // Filtering

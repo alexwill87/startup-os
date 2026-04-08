@@ -1,11 +1,10 @@
-# Project OS
+# Startup OS
 
 **An open-source startup operating system.** One repo, one deploy, and your team has a shared brain — from idea to launch.
 
 Define your vision. Set goals. Propose features. Vote as a team. Build with AI agents. Track everything.
 
-> **Live demo:** https://radar-cockpit.vercel.app
-> Currently dogfooded by [Radar](https://github.com/abdulmalikajibadecodes/radar-foundation) — AI Tinkerers Paris, April 2026.
+> Deploy your own instance in 10 minutes. See Quick Start below.
 
 ---
 
@@ -61,7 +60,7 @@ Preparation → Internal Reference → External Research → Communication → D
 | Agent | Interface | Capabilities |
 |-------|-----------|-------------|
 | **In-app Assistant** | Side panel (purple "AI" button) | Read project data, fill profiles, create tasks/goals/decisions, answer questions |
-| **Telegram Bot** | @RadarPMBot | `/task`, `/summary`, free-text AI responses, notifications on all actions |
+| **Telegram Bot** | @the productPMBot | `/task`, `/summary`, free-text AI responses, notifications on all actions |
 | **AI Suggest** | Inline buttons on forms | Auto-fill feature description, KPI, prompt, checklist from title |
 | **AI Find** | Discovery page | Generate 5 feature ideas from project context |
 | **Mega Prompt** | Download .md file | Export full project context for external LLMs (Google Deep Research, etc.) |
@@ -138,8 +137,8 @@ Preparation → Internal Reference → External Research → Communication → D
 
 ### 1. Clone and install
 ```bash
-git clone https://github.com/alexwill87/radar-cockpit.git
-cd radar-cockpit
+git clone https://github.com/alexwill87/startup-os.git
+cd startup-os
 npm install
 ```
 
@@ -262,13 +261,13 @@ app/
 
 ## Team
 
-| Name | Role |
+| Role | Description |
+| Admin | Project manager, full control |
+| Co-founder | Core team, create and vote |
+| Mentor | Read-only, comment and advise |
+| Observer | View purpose and KPIs, give feedback |
 |------|------|
-| Omar | Admin / Project Manager (OpenClaw) |
-| Alex | Co-founder |
-| Abdulmalik | Co-founder (Backend) |
-| Loice | Co-founder (Frontend) |
-| @RadarPMBot | Telegram Bot Agent |
+| @the productPMBot | Telegram Bot Agent |
 
 ---
 
