@@ -35,12 +35,9 @@ const ALL_PILLARS = [
     color: "#10b981",
     access: ["admin", "cofounder", "mentor"],
     items: [
-      { href: "/ressources/links", label: "Links & Docs" },
-      { href: "/ressources/files", label: "Files" },
-      { href: "/ressources/gallery", label: "Gallery" },
-      { href: "/ressources/tools", label: "Tools & APIs" },
-      { href: "/ressources/budget", label: "Budget" },
       { href: "/projet/docs", label: "Documentation" },
+      { href: "/ressources/links", label: "Links" },
+      { href: "/ressources/files", label: "Files" },
     ],
   },
   {
