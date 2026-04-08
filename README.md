@@ -146,7 +146,8 @@ npm install
 ### 2. Set up Supabase
 1. Create a project at [supabase.com/dashboard](https://supabase.com/dashboard)
 2. Run all SQL files in `supabase/migrations/` in order (001 → 018)
-3. Set **Site URL** in Authentication > URL Configuration
+3. Run the seed files in `seeds/` (checklist.sql, workflow.sql) — template data for any startup
+4. Set **Site URL** in Authentication > URL Configuration
 
 ### 3. Configure environment
 ```bash
