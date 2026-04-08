@@ -26,7 +26,6 @@ const ALL_PILLARS = [
       { href: "/equipe/members", label: "Members" },
       { href: "/equipe/agents", label: "Agents" },
       { href: "/equipe/roles", label: "Roles" },
-      { href: "/equipe/profile", label: "My Profile" },
       { href: "/equipe/onboarding", label: "Onboarding" },
     ],
   },
@@ -106,7 +105,8 @@ const ALL_PILLARS = [
     color: "#64748b",
     access: ["admin"],
     items: [
-      { href: "/setup/config", label: "Settings" },
+      { href: "/setup/config", label: "Project Settings" },
+      { href: "/equipe/profile", label: "My Profile" },
       { href: "/setup/checklist", label: "Checklist" },
       { href: "/setup/bot", label: "Bot" },
       { href: "/guide", label: "Guide" },

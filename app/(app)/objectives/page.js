@@ -30,6 +30,7 @@ export default function GoalsPage() {
   const [editText, setEditText] = useState("");
   const [addingPillar, setAddingPillar] = useState(null);
   const [newText, setNewText] = useState("");
+  const [editingAssign, setEditingAssign] = useState(null);
   const [commentForm, setCommentForm] = useState({});
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,15 @@ export default function GoalsPage() {
   }
 
   function getComments(objId) { return comments[objId] || []; }
+
+  function getAssign(obj) {
+    try { return JSON.parse(obj.description || "{}"); } catch { return {}; }
+  }
+
+  async function saveAssign(obj, assign) {
+    await supabase.from("cockpit_objectives").update({ description: JSON.stringify(assign) }).eq("id", obj.id);
+    fetchAll();
+  }
 
   function getVoteCounts(objId) {
     const cmts = getComments(objId);
@@ -220,6 +230,73 @@ export default function GoalsPage() {
                               className="text-[10px] px-2 py-1 rounded text-red-400/40 hover:text-red-400 transition">Del</button>}
                           </div>
                         </div>
+
+                        {/* Assignments: responsible, controller, agents */}
+                        {(() => {
+                          const assign = getAssign(obj);
+                          const isAssigning = editingAssign === obj.id;
+                          return (
+                            <div className="mt-3 flex items-center gap-3 flex-wrap">
+                              {assign.responsible && (
+                                <span className="text-[10px]"><span className="text-[#475569]">Lead:</span> <span className="text-blue-400 font-semibold">{assign.responsible}</span></span>
+                              )}
+                              {assign.controller && (
+                                <span className="text-[10px]"><span className="text-[#475569]">Control:</span> <span className="text-green-400 font-semibold">{assign.controller}</span></span>
+                              )}
+                              {(assign.agents || []).map((a) => (
+                                <span key={a} className="text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded font-mono">{a}</span>
+                              ))}
+                              {!assign.responsible && !isAssigning && canEdit && (
+                                <button onClick={() => setEditingAssign(obj.id)} className="text-[10px] text-[#334155] hover:text-[#64748b]">+ Assign</button>
+                              )}
+                              {assign.responsible && canEdit && !isAssigning && (
+                                <button onClick={() => setEditingAssign(obj.id)} className="text-[10px] text-[#334155] hover:text-[#64748b] ml-auto">Edit</button>
+                              )}
+                              {isAssigning && (
+                                <div className="w-full mt-2 p-3 rounded-lg bg-[#0a0f1a] border border-[#1e293b] space-y-2">
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div>
+                                      <label className="text-[9px] text-[#475569] uppercase">Lead (responsible)</label>
+                                      <select defaultValue={assign.responsible || ""} id={`resp-${obj.id}`}
+                                        className="w-full py-1.5 px-2 rounded border border-[#1e293b] bg-transparent text-xs text-white outline-none">
+                                        <option value="">—</option>
+                                        {activeMembers.map((m) => <option key={m.id} value={m.name || m.email}>{m.name || m.email}</option>)}
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <label className="text-[9px] text-[#475569] uppercase">Controller</label>
+                                      <select defaultValue={assign.controller || ""} id={`ctrl-${obj.id}`}
+                                        className="w-full py-1.5 px-2 rounded border border-[#1e293b] bg-transparent text-xs text-white outline-none">
+                                        <option value="">—</option>
+                                        {activeMembers.map((m) => <option key={m.id} value={m.name || m.email}>{m.name || m.email}</option>)}
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <label className="text-[9px] text-[#475569] uppercase">Agent</label>
+                                      <select defaultValue={(assign.agents || [])[0] || ""} id={`agent-${obj.id}`}
+                                        className="w-full py-1.5 px-2 rounded border border-[#1e293b] bg-transparent text-xs text-white outline-none">
+                                        <option value="">None</option>
+                                        <option value="Bot Telegram">Bot Telegram</option>
+                                        <option value="Claude Code">Claude Code</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button onClick={() => {
+                                      const r = document.getElementById(`resp-${obj.id}`).value;
+                                      const c = document.getElementById(`ctrl-${obj.id}`).value;
+                                      const a = document.getElementById(`agent-${obj.id}`).value;
+                                      if (r && r === c) { alert("Lead and Controller must be different people"); return; }
+                                      saveAssign(obj, { responsible: r, controller: c, agents: a ? [a] : [] });
+                                      setEditingAssign(null);
+                                    }} className="text-[10px] font-bold px-3 py-1 rounded text-green-400 bg-green-400/10">Save</button>
+                                    <button onClick={() => setEditingAssign(null)} className="text-[10px] px-3 py-1 rounded text-[#475569]">Cancel</button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         {/* Comment thread */}
                         {isExpanded && (
