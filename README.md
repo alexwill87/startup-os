@@ -1,133 +1,221 @@
-# Radar Cockpit
+# Startup OS
 
-**The back-office and strategy dashboard for [Radar](https://github.com/abdulmalikajibadecodes/radar-development)** — powered by [Startup OS](https://github.com/alexwill87/startup-os).
+**The open-source operating system for startup teams.**
 
-Radar monitors job platforms and sends AI-powered alerts with tailored CVs. This cockpit is where the team defines the vision, votes on features, tracks execution, and coordinates with mentors, investors, and early users.
+One repo. One deploy. Your whole team — cofounders, mentors, investors — shares the same dashboard. Define the vision together. Vote on features. Build with AI agents. Ship faster.
 
-> **Live:** https://radar-cockpit.vercel.app
-> **Startup OS (open-source upstream):** https://github.com/alexwill87/startup-os
+> **Deploy in 10 minutes.** See [Quick Start](#quick-start) below.
 
 ---
 
 ## What is this?
 
-This repo is a **dedicated instance** of [Startup OS](https://github.com/alexwill87/startup-os) for the Radar project. It serves as:
+Startup OS replaces the mess of Notion + Slack + Linear + Google Docs with **one integrated dashboard** where:
 
-- **Strategy hub** — Vision, goals, and decisions for Radar
-- **Feature pipeline** — Propose, vote, build, and deploy features with AI agents
-- **Team coordination** — Cofounders, mentors, investors, and early users in one place
-- **Execution tracker** — Tasks, workflow, Gantt, KPIs, retrospectives
-
-Improvements made here can be contributed back to Startup OS. Improvements from the Startup OS community can be pulled in.
-
----
-
-## The Radar Team
-
-### Co-founders
-The core builders. Full access to everything — propose features, vote, assign tasks, build and deploy.
-
-- **Alex** — AI / Product / Claude API
-- **Abdulmalik** — Backend / Infra / DB
-- **Loice** — Frontend / React / UX
-
-### Project Manager
-- **Omar** (OpenClaw) — Admin, coordinates the team, manages the cockpit
-
-### AI Agents
-- **Telegram Bot** (@RadarPMBot) — Notifications, task creation, project summaries
-- **In-app Assistant** — Context-aware AI that fills forms, generates ideas, answers questions
-- **Claude Code** — External agent that develops and deploys features
+- **Everyone sees the same thing** — vision, goals, features, tasks, KPIs
+- **Decisions are voted on** — 2/3 majority required to validate a feature
+- **AI agents help you work** — an in-app assistant fills forms, generates ideas, creates tasks
+- **Different people see different things** — 4 access levels from admin to observer
+- **Everything is tracked** — activity feed, Telegram notifications, audit log
 
 ---
 
-## How We Work
+## Who is it for?
 
-### 1. Define Goals
-Each of the 7 pillars (Purpose, Team, Resources, Product, Market, Finances, Analytics) has up to 3 goals. Each goal requires **2/3 majority** to lock. Every goal has a **Lead**, a **Controller**, and an **Agent**.
+| Role | What they do | What they see |
+|------|-------------|---------------|
+| **Admin** | Manages the cockpit, invites people, configures bots and API keys | Everything |
+| **Co-founder** | Proposes features, votes, builds, tracks tasks | Everything |
+| **Mentor** | Reviews, comments, validates goals, gives expert opinions | Everything (read-only) |
+| **Observer** | Follows progress, gives feedback — ambassadors, prospects, early clients | Vision + KPIs + Feedback |
+
+Each role has its own **onboarding flow** and **personalized dashboard**.
+
+---
+
+## How it works
+
+### 1. Define Purpose
+Write your mission, vision, and north star metric. Set up to **3 goals per pillar** (7 pillars). Each goal needs 2/3 votes to lock. Assign a **Lead**, a **Controller**, and an **Agent** to each goal.
 
 ### 2. Propose Features
-Anyone on the team proposes features. AI helps fill the description, KPI, prompt, and checklist. The team votes — **2/3 must agree** before a feature can be built.
+Anyone can propose a feature. The AI assistant helps fill in the description, KPIs, technical prompt, and checklist automatically. Features go through a **validation pipeline**:
 
-### 3. Build with Workflow
-Every feature follows a workflow: Preparation → Research → Debate → Definition → Build → Test → Review → Launch. Tasks are assigned to **people or AI agents**.
+```
+Find (AI discovers ideas) → Propose → Team votes (2/3) → Build → Control → Deploy
+```
 
-### 4. Control and Deploy
-After building, the team validates. A **configurable threshold** (default 66%) must confirm the feature works as expected before it's marked as deployed.
+### 3. Execute with Workflow
+Every feature follows a **customizable workflow** with 11 default steps:
+Preparation → Research → Communication → Debate → Definition → Configuration → Build → Test → Review → Confirmation → Launch
 
----
-
-## For Mentors
-
-Mentors have **read-only access** to the full project. You can:
-- Comment on goals and vision statements (agree / disagree / neutral)
-- Validate objectives with your expertise
-- Participate in feature debates
-- Review the team's strategy notes
-
-**To join as mentor:** Contact the team or fill the application form (see below).
+### 4. Track Everything
+Tasks on a **Kanban board** and **Gantt chart**. KPIs with targets. Automated alerts. Per-pillar health scoring. Leaderboard. Activity feed with Telegram notifications.
 
 ---
 
-## For Investors & Observers
+## The 9 Pillars
 
-Observers see the **Purpose** (mission, vision, goals) and **Analytics** (KPIs, health score). You can:
-- Follow the project's progress in real-time
-- See validated goals and feature pipeline status
-- Submit feedback and feature suggestions
-- View the team's public profiles
-
-**To join as observer:** Contact the team or fill the application form (see below).
-
----
-
-## Join the Project
-
-Want to get involved? We welcome:
-
-| Role | What you'll do | How to apply |
-|------|---------------|-------------|
-| **Co-founder** | Build Radar full-time | Reach out to the team directly |
-| **Mentor** | Advise on strategy, review goals, challenge assumptions | Fill the [application form](https://radar-cockpit.vercel.app/apply) |
-| **Investor / Observer** | Follow progress, give feedback, explore the product | Fill the [application form](https://radar-cockpit.vercel.app/apply) |
-
-Once approved, you'll receive a **magic link** by email to access the cockpit with the right permissions.
+| Pillar | What it covers |
+|--------|---------------|
+| **Purpose** | Vision statements + Goals (with voting and assignments) |
+| **Team** | Member directory, agents, roles, onboarding |
+| **Resources** | Documentation, links, files |
+| **Product** | Feature pipeline, AI discovery, roadmap, retrospective, feedback |
+| **WorkList** | Tasks (Board + Gantt), Workflow templates |
+| **Market** | Personas, competitors, user feedback |
+| **Finances** | Budget, cost projections, revenue tracking |
+| **Analytics** | KPIs, automated alerts, health score |
+| **Config** | Project settings, profile, bot, API keys, guide |
 
 ---
 
-## Roadmap
+## AI Integration
 
-### Now (Sprint 2 — April 2026)
-- [ ] Define vision and lock the first goals
-- [ ] Propose and validate the core Radar features
-- [ ] Complete team profiles and onboarding
-- [ ] Test the AI agent workflow (propose → vote → build → control)
+Startup OS has **3 levels of AI assistance**:
 
-### Next (Sprint 3)
-- [ ] First features built and deployed via the pipeline
-- [ ] Invite mentors and collect their input
-- [ ] KPIs tracking active
-- [ ] Retrospective on workflow effectiveness
+### In-App Assistant (side panel)
+A chatbot that knows your entire project — goals, features, team, KPIs. It can:
+- Answer questions about the project
+- Fill your profile from pasted text
+- Create tasks, goals, decisions
+- Suggest features and write prompts
 
-### Later (Sprint 4 — Demo Day)
-- [ ] All key features validated and deployed
-- [ ] Pitch deck generated from cockpit data
-- [ ] Investor observers onboarded
-- [ ] Public demo of the full pipeline
+### AI Suggest (inline on forms)
+When you create a feature, click "AI fill" and it generates:
+- Description
+- Expected KPI
+- Technical prompt for implementation
+- Checklist of sub-tasks
 
----
+### AI Find (discovery page)
+Click "AI Find" to generate 5 feature ideas from your project context. Or download a **mega-prompt** to use with any external LLM (ChatGPT, Google Deep Research, Claude), then upload the JSON results.
 
-## Tech
-
-Built on [Startup OS](https://github.com/alexwill87/startup-os) — Next.js 16, Supabase, Tailwind CSS v4, Vercel.
-
-See the [Startup OS README](https://github.com/alexwill87/startup-os) for full technical documentation.
+### Telegram Bot
+Notifications on every action. Commands: `/task`, `/summary`, free-text questions. Configurable provider (OpenRouter, Anthropic, Mistral).
 
 ---
 
-## Links
+## Quick Start
 
-- **Radar Product:** https://github.com/abdulmalikajibadecodes/radar-development
-- **Cockpit (this):** https://github.com/alexwill87/radar-cockpit
-- **Startup OS (upstream):** https://github.com/alexwill87/startup-os
-- **Live Dashboard:** https://radar-cockpit.vercel.app
+### 1. Fork and clone
+```bash
+git clone https://github.com/alexwill87/startup-os.git
+cd startup-os
+npm install
+```
+
+### 2. Create a Supabase project
+1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) (free tier works)
+2. Create a new project
+3. In the SQL Editor, run all files in `supabase/migrations/` in order (001 → 018)
+4. Then run the seed files: `seeds/checklist.sql` and `seeds/workflow.sql`
+5. Set your **Site URL** in Authentication > URL Configuration
+
+### 3. Configure
+```bash
+cp .env.example .env.local
+# Fill in: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+```
+
+### 4. Create your admin account
+In Supabase SQL Editor:
+```sql
+INSERT INTO cockpit_members (email, name, role, builder, color, status)
+VALUES ('you@email.com', 'Your Name', 'admin', 'A', '#3b82f6', 'active');
+```
+
+### 5. Run
+```bash
+npm run dev
+```
+
+### 6. Deploy
+```bash
+vercel --prod
+```
+
+That's it. Open the app, log in with magic link, and start building.
+
+---
+
+## Onboarding
+
+After deploying, each role has a guided onboarding:
+
+**Admin** (8 steps): Profile → Bot → API Keys → Invite team → Vision → Goals → Checklist → Tasks
+
+**Co-founder** (6 steps): Profile → Read vision → Define goals → Check board → Vote on decisions → Connect Telegram
+
+**Mentor** (5 steps): Profile → Read vision → Review goals → Join decisions → Read strategy
+
+**Observer** (3 steps): Read vision → Check KPIs → Give feedback
+
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| **Framework** | Next.js 16 (App Router) |
+| **Styling** | Tailwind CSS v4 |
+| **Database** | Supabase PostgreSQL |
+| **Auth** | Magic link (Supabase Auth) |
+| **Realtime** | Supabase WebSockets |
+| **AI** | OpenRouter / Anthropic / Mistral |
+| **Bot** | Telegram webhook |
+| **Hosting** | Vercel |
+
+---
+
+## Data Separation
+
+Startup OS cleanly separates **platform** from **project data**:
+
+| In the repo (shared) | In Supabase (private) |
+|---|---|
+| Pages, components, API routes | Your team members |
+| Database schema (migrations) | Your goals, features, tasks |
+| Seed templates (checklist, workflow) | Your vision, decisions, votes |
+| README, Contributing guide | Your API keys, bot tokens |
+
+When you fork → you get the platform. You create your own Supabase → you get a blank slate. Run the seeds → you get startup questions to answer. Your data never touches the repo.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+
+**Quick version:**
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/my-thing`
+3. Make changes, ensure `npm run build` passes
+4. Submit a Pull Request
+
+**Priority areas:**
+- Multi-language (i18n)
+- Mobile responsive
+- Email notifications
+- Export to PDF
+- Integrations (Slack, Google Drive, Notion)
+- Better Gantt (drag & drop)
+- Testing (unit + E2E)
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+**Latest: v0.4.0** — AI chatbot agent, feature pipeline with voting, tasks + Gantt, workflow templates, dynamic branding, public apply page, Supabase setup guide.
+
+---
+
+## License
+
+MIT — use it, fork it, build on it.
+
+---
+
+Built with [Claude Code](https://claude.ai/code).
