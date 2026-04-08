@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
@@ -108,12 +108,9 @@ const ALL_PILLARS = [
     color: "#64748b",
     access: ["admin"],
     items: [
+      { href: "/setup/config", label: "Settings" },
       { href: "/setup/checklist", label: "Checklist" },
-      { href: "/setup/config", label: "Project Settings" },
-      { href: "/setup/api-keys", label: "API Keys" },
       { href: "/setup/bot", label: "Bot" },
-      { href: "/setup/roadmap-os", label: "Feature Roadmap" },
-      { href: "/setup/changelog", label: "Changelog" },
       { href: "/guide", label: "Guide" },
     ],
   },
@@ -125,6 +122,12 @@ export default function Sidebar() {
   const userRole = member?.role || "observer";
   const PILLARS = ALL_PILLARS.filter((p) => p.access.includes(userRole));
   const [collapsed, setCollapsed] = useState(false);
+  const [projectName, setProjectName] = useState("Project OS");
+
+  useEffect(() => {
+    supabase.from("cockpit_vision").select("body").eq("topic", "other").eq("title", "config:project_name").maybeSingle()
+      .then(({ data }) => { if (data?.body) setProjectName(data.body); });
+  }, []);
   const [openPillars, setOpenPillars] = useState(() => {
     // Open the pillar that matches current path
     const current = PILLARS.find((p) => pathname.startsWith(`/${p.id}`));
@@ -150,7 +153,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border)" }}>
         {!collapsed && (
           <Link href="/" className="text-[15px] font-extrabold text-white tracking-tight">
-            Project OS
+            {projectName}
           </Link>
         )}
         <button
