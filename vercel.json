@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/daily-summary?type=morning",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/daily-summary?type=night",
+      "schedule": "0 18 * * *"
+    }
+  ]
+}

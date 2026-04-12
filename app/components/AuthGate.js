@@ -7,7 +7,7 @@ import Sidebar from "./Sidebar";
 import FeedbackWidget from "./FeedbackWidget";
 import ChatPanel from "./ChatPanel";
 
-const PUBLIC_ROUTES = ["/apply"];
+const PUBLIC_ROUTES = ["/apply", "/auth/callback"];
 
 export default function AuthGate({ children }) {
   const pathname = usePathname();
@@ -34,10 +34,7 @@ export default function AuthGate({ children }) {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <main
-        className="min-h-screen p-8 lg:p-10 overflow-y-auto"
-        style={{ marginLeft: "260px" }}
-      >
+      <main className="min-h-screen p-6 sm:p-8 lg:p-10 overflow-y-auto transition-all duration-200 sidebar-main">
         <div className="max-w-[1200px]">
           {children}
         </div>

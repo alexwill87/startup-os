@@ -1,221 +1,161 @@
-# Startup OS
+# Startup OS — Cockpit
 
-**The open-source operating system for startup teams.**
+> The sovereign dashboard for startup teams. From day 1 to Demo Day.
 
-One repo. One deploy. Your whole team — cofounders, mentors, investors — shares the same dashboard. Define the vision together. Vote on features. Build with AI agents. Ship faster.
-
-> **Deploy in 10 minutes.** See [Quick Start](#quick-start) below.
+**Live:** https://radar-cockpit.vercel.app
+**Upstream (open-source):** https://github.com/alexwill87/startup-os
 
 ---
 
 ## What is this?
 
-Startup OS replaces the mess of Notion + Slack + Linear + Google Docs with **one integrated dashboard** where:
+A team cockpit that helps startup founders **work together effectively** — know what to do, in what order, communicate and decide together.
 
-- **Everyone sees the same thing** — vision, goals, features, tasks, KPIs
-- **Decisions are voted on** — 2/3 majority required to validate a feature
-- **AI agents help you work** — an in-app assistant fills forms, generates ideas, creates tasks
-- **Different people see different things** — 4 access levels from admin to observer
-- **Everything is tracked** — activity feed, Telegram notifications, audit log
-
----
-
-## Who is it for?
-
-| Role | What they do | What they see |
-|------|-------------|---------------|
-| **Admin** | Manages the cockpit, invites people, configures bots and API keys | Everything |
-| **Co-founder** | Proposes features, votes, builds, tracks tasks | Everything |
-| **Mentor** | Reviews, comments, validates goals, gives expert opinions | Everything (read-only) |
-| **Observer** | Follows progress, gives feedback — ambassadors, prospects, early clients | Vision + KPIs + Feedback |
-
-Each role has its own **onboarding flow** and **personalized dashboard**.
+Built for **3 audiences**:
+1. **The internal team** (cofounders) → pilot daily work
+2. **Mentors** → comment, vote, advise
+3. **Observers** (ambassadors, investors) → follow progress
 
 ---
 
-## How it works
+## Architecture
 
-### 1. Define Purpose
-Write your mission, vision, and north star metric. Set up to **3 goals per pillar** (7 pillars). Each goal needs 2/3 votes to lock. Assign a **Lead**, a **Controller**, and an **Agent** to each goal.
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js 16, React, Tailwind CSS v4 |
+| Backend | Supabase (PostgreSQL, Auth, Realtime, Storage) |
+| AI Agent | Steve (Startup Assistant) — configurable from UI |
+| Hosting | Vercel |
+| Design System | Cockpit Design Charter v3 (neutral grey, dark mode) |
 
-### 2. Propose Features
-Anyone can propose a feature. The AI assistant helps fill in the description, KPIs, technical prompt, and checklist automatically. Features go through a **validation pipeline**:
+### 10 Pillars
 
-```
-Find (AI discovers ideas) → Propose → Team votes (2/3) → Build → Control → Deploy
-```
+| Pillar | Purpose | Pages |
+|---|---|---|
+| **Home** | Global + personal dashboard | 1 |
+| **Focus** | Vision, Sprints, Projects, Tasks, Memory, Alerts | 7 |
+| **Product** | Ideas, Features, Feedback | 4 |
+| **Market** | Persona, Problems, Competitors, Surveys | 5 |
+| **Channels** | Landing, Social, Messaging | 4 |
+| **Business** | Finance, Legal, Agenda, KPIs | 5 |
+| **Team** | Members, Agents, Roles, Chatroom | 5 |
+| **Agent** | Config, Memory, Sessions, Costs, Keys, Models | 7 |
+| **Settings** | Project, Workflow, Supabase, Bot, Guide | 6 |
+| **Me** | Profile, Onboarding, Preferences, Activity, Resources | 5 |
 
-### 3. Execute with Workflow
-Every feature follows a **customizable workflow** with 11 default steps:
-Preparation → Research → Communication → Debate → Definition → Configuration → Build → Test → Review → Confirmation → Launch
+**53 pages total.** 18 fully functional with Supabase CRUD + realtime. The rest are planned stubs with descriptions of what they will contain.
 
-### 4. Track Everything
-Tasks on a **Kanban board** and **Gantt chart**. KPIs with targets. Automated alerts. Per-pillar health scoring. Leaderboard. Activity feed with Telegram notifications.
+### Design System
 
----
+- **Dark mode only** — neutral grey palette (Tailwind `neutral`)
+- **No icons** except 10 SVG stroke icons for sidebar pillars
+- **No emojis** anywhere in the UI
+- **No gradients, no shadows** — separation via borders and background changes
+- **English only** — all UI text in English
+- **Footer**: `{project.name} · {year} · Built with Startup OS`
 
-## The 9 Pillars
+Components: `Button`, `Badge`, `PageLayout`, `Topbar`, `PageTitle`, `KpiRow`/`KpiCard`, `Table`, `Form*`, `Footer`, `StubV1Page`, `PillarOverview`
 
-| Pillar | What it covers |
-|--------|---------------|
-| **Purpose** | Vision statements + Goals (with voting and assignments) |
-| **Team** | Member directory, agents, roles, onboarding |
-| **Resources** | Documentation, links, files |
-| **Product** | Feature pipeline, AI discovery, roadmap, retrospective, feedback |
-| **WorkList** | Tasks (Board + Gantt), Workflow templates |
-| **Market** | Personas, competitors, user feedback |
-| **Finances** | Budget, cost projections, revenue tracking |
-| **Analytics** | KPIs, automated alerts, health score |
-| **Config** | Project settings, profile, bot, API keys, guide |
+See [COCKPIT_DESIGN_SYSTEM.md](/COCKPIT_DESIGN_SYSTEM.md) and [cockpit_design_charter.html](/cockpit_design_charter.html) for the full specification.
 
----
+### AI Agent — Steve
 
-## AI Integration
+The in-house AI assistant, configurable entirely from the UI:
+- **Identity**: name, avatar, language, tone
+- **Soul**: mission, personality, values, do/don't lists
+- **Rules**: hard rules (never violate) + soft rules
+- **Tools**: 11 actions (create_task, vote_decision, remember, etc.)
+- **Memory**: semantic (pgvector), scoped per user/project/global
+- **Observability**: every LLM call logged, cost tracked, sessions recorded
 
-Startup OS has **3 levels of AI assistance**:
+Backend: `lib/agent/context.js` (single source of truth), `lib/agent/crypto.js` (AES-256-GCM for API keys).
 
-### In-App Assistant (side panel)
-A chatbot that knows your entire project — goals, features, team, KPIs. It can:
-- Answer questions about the project
-- Fill your profile from pasted text
-- Create tasks, goals, decisions
-- Suggest features and write prompts
-
-### AI Suggest (inline on forms)
-When you create a feature, click "AI fill" and it generates:
-- Description
-- Expected KPI
-- Technical prompt for implementation
-- Checklist of sub-tasks
-
-### AI Find (discovery page)
-Click "AI Find" to generate 5 feature ideas from your project context. Or download a **mega-prompt** to use with any external LLM (ChatGPT, Google Deep Research, Claude), then upload the JSON results.
-
-### Telegram Bot
-Notifications on every action. Commands: `/task`, `/summary`, free-text questions. Configurable provider (OpenRouter, Anthropic, Mistral).
+Migration: `supabase/migrations/026_agent_tables.sql` (7 tables + pgvector + seed).
 
 ---
 
-## Quick Start
+## Personalization
 
-### 1. Fork and clone
+Everything that makes an instance unique lives in Supabase, **not in code**:
+- Project name, logo, description → `/settings/project` page
+- Agent personality → `/agent/config` page
+- API keys → `/agent/keys` page (encrypted AES-256-GCM)
+- The only hardcoded brand: **"Startup OS"** in the footer
+
+The same codebase powers both this instance and the [open-source upstream](https://github.com/alexwill87/startup-os). Different DB = different project.
+
+---
+
+## Roles
+
+| Role | Access | Can do |
+|---|---|---|
+| **Admin** | Everything | Manage settings, keys, bot, invite/revoke members |
+| **Cofounder** | All pillars | Create projects/features/tasks, vote, build |
+| **Mentor** | All pillars (read) | Comment, vote, advise |
+| **Observer** | Vision + KPIs | Follow progress, submit feedback |
+
+---
+
+## Getting Started
+
+### 1. Clone and install
 ```bash
-git clone https://github.com/alexwill87/startup-os.git
-cd startup-os
+git clone https://github.com/alexwill87/radar-cockpit.git
+cd radar-cockpit
 npm install
 ```
 
-### 2. Create a Supabase project
-1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) (free tier works)
-2. Create a new project
-3. In the SQL Editor, run all files in `supabase/migrations/` in order (001 → 018)
-4. Then run the seed files: `seeds/checklist.sql` and `seeds/workflow.sql`
-5. Set your **Site URL** in Authentication > URL Configuration
-
-### 3. Configure
+### 2. Configure Supabase
+Create a Supabase project, then run all migrations in order:
 ```bash
-cp .env.example .env.local
-# Fill in: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+# In Supabase SQL Editor:
+supabase/migrations/001_cockpit_tables.sql → 026_agent_tables.sql
+seeds/checklist.sql
+seeds/workflow.sql
 ```
 
-### 4. Create your admin account
-In Supabase SQL Editor:
-```sql
-INSERT INTO cockpit_members (email, name, role, builder, color, status)
-VALUES ('you@email.com', 'Your Name', 'admin', 'A', '#3b82f6', 'active');
+### 3. Environment variables
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+AGENT_KEY_MASTER=<32 bytes base64>  # for API key encryption
+NEXT_PUBLIC_SITE_URL=https://your-deployment.vercel.app
 ```
 
-### 5. Run
+### 4. Run locally
 ```bash
 npm run dev
 ```
 
-### 6. Deploy
+### 5. Deploy
 ```bash
 vercel --prod
 ```
 
-That's it. Open the app, log in with magic link, and start building.
-
 ---
 
-## Onboarding
+## Sync with Startup OS
 
-After deploying, each role has a guided onboarding:
-
-**Admin** (8 steps): Profile → Bot → API Keys → Invite team → Vision → Goals → Checklist → Tasks
-
-**Co-founder** (6 steps): Profile → Read vision → Define goals → Check board → Vote on decisions → Connect Telegram
-
-**Mentor** (5 steps): Profile → Read vision → Review goals → Join decisions → Read strategy
-
-**Observer** (3 steps): Read vision → Check KPIs → Give feedback
-
----
-
-## Tech Stack
-
-| | |
-|---|---|
-| **Framework** | Next.js 16 (App Router) |
-| **Styling** | Tailwind CSS v4 |
-| **Database** | Supabase PostgreSQL |
-| **Auth** | Magic link (Supabase Auth) |
-| **Realtime** | Supabase WebSockets |
-| **AI** | OpenRouter / Anthropic / Mistral |
-| **Bot** | Telegram webhook |
-| **Hosting** | Vercel |
-
----
-
-## Data Separation
-
-Startup OS cleanly separates **platform** from **project data**:
-
-| In the repo (shared) | In Supabase (private) |
-|---|---|
-| Pages, components, API routes | Your team members |
-| Database schema (migrations) | Your goals, features, tasks |
-| Seed templates (checklist, workflow) | Your vision, decisions, votes |
-| README, Contributing guide | Your API keys, bot tokens |
-
-When you fork → you get the platform. You create your own Supabase → you get a blank slate. Run the seeds → you get startup questions to answer. Your data never touches the repo.
+This repo can be synced with the upstream open-source repo:
+```bash
+./scripts/sync-to-startup-os.sh           # dry-run
+./scripts/sync-to-startup-os.sh --apply   # execute
+```
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
-
-**Quick version:**
-1. Fork the repo
-2. Create a branch: `git checkout -b feature/my-thing`
-3. Make changes, ensure `npm run build` passes
-4. Submit a Pull Request
-
-**Priority areas:**
-- Multi-language (i18n)
-- Mobile responsive
-- Email notifications
-- Export to PDF
-- Integrations (Slack, Google Drive, Notion)
-- Better Gantt (drag & drop)
-- Testing (unit + E2E)
+Improvements made here can be contributed back to [Startup OS](https://github.com/alexwill87/startup-os). See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## Changelog
+## Links
 
-See [CHANGELOG.md](CHANGELOG.md) for full version history.
+- **Upstream (open-source):** https://github.com/alexwill87/startup-os
+- **Live Dashboard:** https://radar-cockpit.vercel.app
+- **Design System:** [COCKPIT_DESIGN_SYSTEM.md](/COCKPIT_DESIGN_SYSTEM.md)
 
-**Latest: v0.4.0** — AI chatbot agent, feature pipeline with voting, tasks + Gantt, workflow templates, dynamic branding, public apply page, Supabase setup guide.
-
----
-
-## License
-
-MIT — use it, fork it, build on it.
-
----
-
-Built with [Claude Code](https://claude.ai/code).
+Built with [Startup OS](https://github.com/alexwill87/startup-os) — the sovereign cockpit for startup teams.

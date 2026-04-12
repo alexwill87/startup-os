@@ -1,15 +1,66 @@
 @import "tailwindcss";
 
+/* =====================================================
+   COCKPIT DESIGN SYSTEM v3.0
+   Source de vérité : /COCKPIT_DESIGN_SYSTEM.md
+   Charte HTML     : /cockpit_design_charter.html
+   ===================================================== */
 :root {
-  --sidebar-width: 260px;
-  --bg-primary: #080c14;
-  --bg-card: #0d1117;
-  --bg-hover: #161b22;
-  --border: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
-  --accent: #3b82f6;
+  /* ---- Backgrounds (gris neutre Tailwind neutral) ---- */
+  --bg:              #1a1a1a;   /* neutral-900+ — fond app (adouci) */
+  --bg-2:            #242424;   /* neutral-850 — sidebar, cartes */
+  --bg-3:            #2e2e2e;   /* neutral-800 — hover, actifs, inputs */
+
+  /* ---- Textes ---- */
+  --text:            #fafafa;   /* neutral-50 — principal */
+  --text-2:          #a3a3a3;   /* neutral-400 — secondaire */
+  --text-3:          #737373;   /* neutral-500 — muted, metadata */
+
+  /* ---- Bordures ---- */
+  --border:          #2e2e2e;   /* neutral-800 — séparateurs discrets */
+  --border-strong:   #484848;   /* neutral-650 — bordures inputs */
+
+  /* ---- Accent (bleu) ---- */
+  --accent:          #3b82f6;
+  --accent-bg:       rgba(59,130,246,0.12);
+  --accent-text:     #93c5fd;
+
+  /* ---- Success (vert) ---- */
+  --success:         #22c55e;
+  --success-bg:      rgba(34,197,94,0.12);
+  --success-text:    #86efac;
+
+  /* ---- Warning (orange) ---- */
+  --warn:            #f59e0b;
+  --warn-bg:         rgba(245,158,11,0.12);
+  --warn-text:       #fcd34d;
+
+  /* ---- Danger (rouge) ---- */
+  --danger:          #ef4444;
+  --danger-bg:       rgba(239,68,68,0.12);
+  --danger-text:     #fca5a5;
+
+  /* ---- Layout ---- */
+  --radius:          6px;
+  --radius-lg:       10px;
+  --radius-xl:       16px;
+  --sidebar-width:   260px;
+  --topbar-h:        52px;
+
+  /* ---- Typographie ---- */
+  --font-size-base:  15px;
+
+  /* =====================================================
+     ALIAS DE MIGRATION — vers les anciens noms de tokens
+     Conservés tant que toutes les pages V2 ne sont pas migrées.
+     Ne supprimer qu'après migration complète d'une page.
+     ===================================================== */
+  --bg-primary:      var(--bg);
+  --bg-card:         var(--bg-2);
+  --bg-hover:        var(--bg-3);
+  --text-primary:    var(--text);
+  --text-secondary:  var(--text-2);
+  --text-muted:      var(--text-3);
 }
 
 html {
@@ -46,6 +97,20 @@ a {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border-color: #334155;
+}
+
+/* Sidebar responsive margin */
+.sidebar-main {
+  margin-left: 260px;
+  transition: margin-left 0.2s ease;
+}
+[data-sidebar="collapsed"] .sidebar-main {
+  margin-left: 60px;
+}
+@media (max-width: 768px) {
+  .sidebar-main {
+    margin-left: 0 !important;
+  }
 }
 
 /* Scrollbar */

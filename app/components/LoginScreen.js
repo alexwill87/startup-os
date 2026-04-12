@@ -28,7 +28,11 @@ export default function LoginScreen() {
     setLoading(true); setError(null); setSuccess(null);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+      options: {
+        emailRedirectTo: typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined,
+      },
     });
     if (error) setError(error.message);
     else setSuccess("Check your inbox — we sent you a login link.");

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Startup OS.
+All notable changes to Startup OS / Cockpit.
 
 ## [0.4.0] — 2026-04-08 (J4 Intelligence)
 

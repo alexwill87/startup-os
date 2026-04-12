@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase, SPRINTS } from "@/lib/supabase";
-import { useAuth } from "@/lib/AuthProvider";
+import { useAuth, useProject } from "@/lib/AuthProvider";
 import { calculateCompletion } from "@/lib/completion";
 import { syncChecklist } from "@/lib/sync-checklist";
 import Card from "@/app/components/Card";
@@ -29,6 +29,7 @@ const EMOJIS = { created: "🆕", updated: "✏️", completed: "✅", commented
 
 export default function Home() {
   const { builder } = useAuth();
+  const project = useProject();
   const [completion, setCompletion] = useState(null);
   const [taskStats, setTaskStats] = useState({ done: 0, total: 0 });
   const [activity, setActivity] = useState([]);
@@ -73,9 +74,9 @@ export default function Home() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Your Startup</h1>
+        <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">{project?.name || "Dashboard"}</h1>
         <p className="text-sm text-[#94a3b8] leading-relaxed max-w-2xl">
-          AI-powered job monitoring — instant alerts with tailored CVs and pitches.
+          {project?.description || "Team cockpit for cofounders, mentors, and investors."}
         </p>
       </div>
 

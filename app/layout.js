@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Startup OS",
-  description: "Open-source startup operating system.",
+  description: "Team cockpit for cofounders, mentors, and investors. Built with Startup OS.",
   icons: {
     icon: "/api/favicon",
   },
