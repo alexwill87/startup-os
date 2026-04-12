@@ -172,13 +172,36 @@ Requirements: Docker, a VPS or local machine.
      postgrest/postgrest
    ```
 
-4. Generate an anon JWT and set your `.env.local`:
+4. Set your `.env.local`:
    ```
-   NEXT_PUBLIC_SUPABASE_URL=http://localhost:3100
+   NEXT_PUBLIC_SUPABASE_URL=https://your-domain.com   # public URL, NOT localhost
    NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-generated-jwt>
+   NEXT_PUBLIC_AUTH_MODE=selfhosted                    # skips Supabase Auth, auto-login as admin
+   ```
+
+5. Add nginx proxy (required — the browser must reach PostgREST via your domain):
+   ```nginx
+   # PostgREST API
+   location /rest/v1/ {
+       proxy_pass http://127.0.0.1:3100/;
+       proxy_set_header Host $host;
+       proxy_set_header Authorization $http_authorization;
+       proxy_set_header apikey $http_apikey;
+   }
+
+   # Stub endpoints (not available in selfhosted)
+   location /auth/v1/ {
+       return 501 '{"error":"Auth not available in selfhosted mode"}';
+       add_header Content-Type application/json;
+   }
+   location /realtime/ {
+       return 501 '{"error":"Realtime not available in selfhosted mode"}';
+       add_header Content-Type application/json;
+   }
    ```
 
 The Supabase JS client works with PostgREST out of the box — same API, no code changes.
+When `NEXT_PUBLIC_AUTH_MODE=selfhosted`, the app auto-logs in as the first admin member (no magic links needed).
 
 **Advantages:** Unlimited projects, zero cost, data sovereignty, works on any VPS.
 

@@ -137,6 +137,7 @@ cat > .env.local <<ENVEOF
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:$API_PORT
 NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY
 NEXT_PUBLIC_SITE_URL=http://localhost:$APP_PORT
+NEXT_PUBLIC_AUTH_MODE=selfhosted
 ENVEOF
 
 # ---- Step 7: Install and build ----
