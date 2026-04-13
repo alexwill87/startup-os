@@ -1,11 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/lib/AuthProvider";
+import { useAuth, useProject } from "@/lib/AuthProvider";
 import LoginScreen from "./LoginScreen";
 import Sidebar from "./Sidebar";
 import FeedbackWidget from "./FeedbackWidget";
 import ChatPanel from "./ChatPanel";
+
+function DynamicTitle() {
+  const project = useProject();
+  useEffect(() => {
+    if (project?.name && project.loaded) {
+      document.title = `${project.name} OS`;
+    }
+  }, [project?.name, project?.loaded]);
+  return null;
+}
 
 const PUBLIC_ROUTES = ["/apply", "/auth/callback"];
 
@@ -33,6 +44,7 @@ export default function AuthGate({ children }) {
 
   return (
     <div className="min-h-screen">
+      <DynamicTitle />
       <Sidebar />
       <main className="min-h-screen p-6 sm:p-8 lg:p-10 overflow-y-auto transition-all duration-200 sidebar-main">
         <div className="max-w-[1200px]">
